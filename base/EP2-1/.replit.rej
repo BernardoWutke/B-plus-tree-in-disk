@@ -1,0 +1,11 @@
+--- .replit	2022-04-29 19:36:06.971620857 +0000
++++ .replit	2022-04-29 19:37:55.159521710 +0000
+@@ -1,7 +1,7 @@
+ compile = ["make", "-s"]
+ run = "./main"
+ entrypoint = "main.c"
+-hidden = ["main", "**/*.o", ".ccls-cache", "Makefile"]
++hidden = ["main", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
+ 
+ [languages.c]
+ pattern = "**/*.{c,h}"
