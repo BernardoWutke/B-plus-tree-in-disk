@@ -43,7 +43,7 @@ void inserirElemento(Pagina *p, int chave){
             fopen(ARQUIVO_ARVORE, "rb");
             fseek(ARQUIVO_ARVORE, p->pai*sizeof(Pagina), SEEK_SET);
             Pagina *pai = (Pagina*) malloc(sizeof(Pagina));
-            fread(pai, sizeof(Pagina), 1, ARQUIVO_ARVORE);
+            fread(pai, sizeof(Pagina), 1, ARQUIVO_ARVORE); 
             fclose(ARQUIVO_ARVORE);
             inserirElemento(pai, p->qtde/2);
             p->qtde = p->qtde/2 - 1;
@@ -52,7 +52,7 @@ void inserirElemento(Pagina *p, int chave){
             Pagina *novaRaiz = criarPagina(p->ordem);
             novaRaiz->chave[0] = chave;
             novaRaiz->filho[0] = p;
-            
+
 
         }
     }
