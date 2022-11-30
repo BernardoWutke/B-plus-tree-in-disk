@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "b_plus_tree.h": "c",
+        "util.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "pagina.h": "c"
+    }
+}
