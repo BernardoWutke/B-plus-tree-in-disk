@@ -5,12 +5,15 @@
 #include<stdlib.h>
 #include<string.h>
 
+#define ARQUIVO_ARVORE "./files/arvore.bin"  
+
+#define ORDEM 4
 
 // Path: main/headers/ultil.c
 
 typedef enum {
-  false,
-  true
+    false,
+    true
 } bool;
 
 typedef struct paciente{
@@ -23,7 +26,6 @@ typedef struct paciente{
     char CPF[20];
 } Paciente;
 
-#define ARQUIVO_ARVORE "arvore.bin"
 
 #endif 
 
