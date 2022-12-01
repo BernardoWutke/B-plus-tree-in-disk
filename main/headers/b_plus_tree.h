@@ -1,6 +1,6 @@
-#ifndef _B_PLUS_TREE_H_
-#define _B_PLUS_TREE_H_
-#include<util.h>
+#ifndef BPlusTree_H
+#define BPlusTree_H
+#include"../headers/util.h"
 
 typedef struct bp_tree {
   int ordem, qtde, raiz;
@@ -10,10 +10,18 @@ typedef struct bp_tree {
 
 
 
+<<<<<<< Updated upstream
 void inicializarBP(BP_Tree *bp);
+=======
+void inicializarBP(int ordem);
+>>>>>>> Stashed changes
 void imprimirArvore();
 int  buscarID(int);
 int  inserirPaciente(Paciente a);
 int  removerPaciente(Paciente a);
 
+<<<<<<< Updated upstream
 #endif
+=======
+#endif 
+>>>>>>> Stashed changes
