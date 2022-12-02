@@ -26,12 +26,9 @@ typedef struct paciente{
     char CPF[20];
 } Paciente;
 
-<<<<<<< Updated upstream
-=======
 void imprimirArquivo();
 
 #define ARQUIVO_ARVORE "../binarios/arvore.bin"
->>>>>>> Stashed changes
 
 #endif 
 

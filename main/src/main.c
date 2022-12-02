@@ -1,6 +1,5 @@
-<<<<<<< Updated upstream
-#include <util.h>
-#include <b_plus_tree.h>
+#include "../headers/util.h"
+#include "../headers/b_plus_tree.h"
 
 int main(){
 
@@ -46,18 +45,5 @@ int main(){
         }
     }
 
-=======
-#include"../headers/util.h"
-#include"../headers/b_plus_tree.h"
-
-
-
-
-int main()
-{
-    inicializarBP(3);
-    imprimirArvore();
-    imprimirArquivo();
->>>>>>> Stashed changes
     return 0;
 }
