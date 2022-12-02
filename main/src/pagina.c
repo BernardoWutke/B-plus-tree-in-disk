@@ -1,4 +1,4 @@
-#include<pagina.h>
+#include"../headers/pagina.h"
 
 Pagina *criaPagina(int ordem){
     Pagina *pagina = (Pagina*) malloc(sizeof(Pagina));
@@ -34,24 +34,24 @@ void inserirElemento(Pagina *p, int chave){
     ordenarPagina(p, p->qtde);
     if(p->qtde > p->ordem){
 
-        Pagina *novaPagina = criarPagina(p->ordem);
+        Pagina *novaPagina = criaPagina(p->ordem);
         for(int j = 0, k = p->qtde/2 + 1; k < p->qtde; ++k, ++j){
             novaPagina->chave[j] = p->chave[k];
         }
         //definir pai
         if(p->pai != -1){
-            fopen(ARQUIVO_ARVORE, "rb");
-            fseek(ARQUIVO_ARVORE, p->pai*sizeof(Pagina), SEEK_SET);
+            FILE* fp = fopen(ARQUIVO_ARVORE, "rb");
+            fseek(fp, p->pai*sizeof(Pagina), SEEK_SET);
             Pagina *pai = (Pagina*) malloc(sizeof(Pagina));
-            fread(pai, sizeof(Pagina), 1, ARQUIVO_ARVORE); 
-            fclose(ARQUIVO_ARVORE);
+            fread(pai, sizeof(Pagina), 1, fp); 
+            fclose(fp);
             inserirElemento(pai, p->qtde/2);
             p->qtde = p->qtde/2 - 1;
         }
         else{
-            Pagina *novaRaiz = criarPagina(p->ordem);
+            Pagina *novaRaiz = criaPagina(p->ordem);
             novaRaiz->chave[0] = chave;
-            novaRaiz->filho[0] = p;
+            novaRaiz->filho[0] = p->index;
 
 
         }

@@ -1,7 +1,7 @@
 #ifndef _PAGE_H_
 #define _PAGE_H_
 
-#include<util.h>
+#include"util.h"
 
 typedef enum { 
   INTERNA, 
@@ -33,4 +33,4 @@ void ordenarPagina(Pagina *p, int);
 
 
 
-#endif _PAGE_H_
+#endif /* _PAGE_H_ */

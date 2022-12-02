@@ -10,7 +10,7 @@ typedef struct bp_tree {
 
 
 
-void inicializarBP(int ordem);
+void inicializarBP(BP_Tree *bp);
 void imprimirArvore();
 int  buscarID(int);
 int  inserirPaciente(Paciente a);

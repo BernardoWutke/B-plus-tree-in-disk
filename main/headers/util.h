@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-#define ARQUIVO_ARVORE "./files/arvore.bin"  
+
 
 #define ORDEM 4
 
