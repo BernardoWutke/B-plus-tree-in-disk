@@ -5,7 +5,7 @@
 
 typedef enum { 
   INTERNA, 
-  FOLHA 
+  FOLHA
 } TipoPagina;
 
 typedef struct pagina {
