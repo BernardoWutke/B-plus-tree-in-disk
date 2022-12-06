@@ -9,8 +9,8 @@ typedef enum {
 } TipoPagina;
 
 typedef struct pagina {
-  int *chave;
-  int *filho;
+  int chave[ORDEM];
+  int filho[ORDEM + 1];
   int ordem;
   int pai;
   int indexProximaPagina;
@@ -23,7 +23,7 @@ typedef struct pagina {
 } Pagina;
 
 Pagina *criaPagina(int ordem);
-Pagina criarPagina(int ordem, int tipo);
+void inicializarPagina(Pagina *pagina, int ordem, int tipo);
 void destroiPagina(Pagina *p);
 void inserirElemento(Pagina *p, int chave);
 void removerElemento(Pagina *p, int chave);

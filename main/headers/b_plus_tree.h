@@ -2,15 +2,15 @@
 #define BPlusTree_H
 #include"../headers/util.h"
 
-typedef struct bp_tree {
+typedef struct  {
   int ordem, qtde, raiz;
 } BP_Tree;
 
 
-void inicializarBP(BP_Tree *bp);
-void imprimirArvore();
-int  buscarElemento(int id, int* indexPagina, BP_Tree bp_tree);
-int  inserirPaciente(Paciente a, BP_Tree bp_tree);
+void inicializarBP();
+void imprimirArvoreHeader();
+int  buscarElemento(int id, int* indexPagina);
+void inserirPaciente(Paciente a);
 int  removerPaciente(Paciente a, BP_Tree bp_tree);
 
 #endif

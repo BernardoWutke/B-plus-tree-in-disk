@@ -8,27 +8,17 @@ Pagina *criaPagina(int ordem){
     pagina->ordem = ordem;
     pagina->indexProximaPagina = -1;
     pagina->indexPaginaAnterior = -1;
-    pagina->chave = (int*) malloc(sizeof(int) *(ordem + 1));
-    pagina->filho = (int*) malloc(sizeof(int) * (ordem + 1));
+
     return pagina;
 }
 
-Pagina criarPagina(int ordem, int tipo){
-    Pagina pagina;
-    pagina.qtdElementos = 0;
-    pagina.pai = -1;
-    pagina.ordem = ordem;
-    pagina.indexProximaPagina = -1;
-    pagina.indexPaginaAnterior = -1;
-
-    if(tipo == FOLHA){
-        pagina.tipo = FOLHA;
-        pagina.chave = (int*) malloc(sizeof(int) * (ordem + 1));
-        pagina.chave = (int*) malloc(sizeof(int)*(ordem + 2));
-    }
-    else pagina.tipo = INTERNA;
-
-    return pagina;
+void inicializarPagina(Pagina *pagina, int _ordem, int _tipo){
+    pagina->qtdElementos = 0;
+    pagina->pai = -1;
+    pagina->ordem = _ordem;
+    pagina->indexProximaPagina = -1;
+    pagina->indexPaginaAnterior = -1;
+    pagina->tipo = _tipo;
 }
 
 void ordenarPagina(Pagina *p, int ordem){

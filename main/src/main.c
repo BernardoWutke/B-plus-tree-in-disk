@@ -35,8 +35,8 @@ Paciente lerDadosPaciente(){
 
 int main(){
 
-    BP_Tree bp_tree; 
-    inicializarBP(&bp_tree); // carrega o cabeçalho da arvore
+    BP_Tree bp_tree;
+    inicializarBP(); // carrega o cabeçalho da arvore
 
     int opcao = -1;
 
@@ -50,7 +50,7 @@ int main(){
         if(opcao == 1){ // buscar paciente pelo ID 
             printf("\nDigite o id do paciente: ");
             scanf("%d", &id);
-            if(!buscarElemento(id, &indexPagina, bp_tree)){
+            if(!buscarElemento(id, &indexPagina)){
                 printf("Paciente com ID %d nao existe!\n", id);
             }
             else{
@@ -58,12 +58,13 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            inserirPaciente(lerDadosPaciente(), bp_tree);
+            inserirPaciente(lerDadosPaciente());
         }
         else if(opcao == 3){
 
         }
         else if(opcao == 4){
+            imprimirArvoreHeader();
 
         }
         else if(opcao == 5){
