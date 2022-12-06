@@ -3,19 +3,37 @@
 Pagina *criaPagina(int ordem){
     Pagina *pagina = (Pagina*) malloc(sizeof(Pagina));
     pagina->tipo = FOLHA;
-    pagina->qtde = 0;
+    pagina->qtdElementos = 0;
     pagina->pai = -1;
     pagina->ordem = ordem;
-    pagina->prox = -1;
-    pagina->ant = -1;
+    pagina->indexProximaPagina = -1;
+    pagina->indexPaginaAnterior = -1;
     pagina->chave = (int*) malloc(sizeof(int) *(ordem + 1));
     pagina->filho = (int*) malloc(sizeof(int) * (ordem + 1));
     return pagina;
 }
 
+Pagina criarPagina(int ordem, int tipo){
+    Pagina pagina;
+    pagina.qtdElementos = 0;
+    pagina.pai = -1;
+    pagina.ordem = ordem;
+    pagina.indexProximaPagina = -1;
+    pagina.indexPaginaAnterior = -1;
+
+    if(tipo == FOLHA){
+        pagina.tipo = FOLHA;
+        pagina.chave = (int*) malloc(sizeof(int) * (ordem + 1));
+        pagina.chave = (int*) malloc(sizeof(int)*(ordem + 2));
+    }
+    else pagina.tipo = INTERNA;
+
+    return pagina;
+}
+
 void ordenarPagina(Pagina *p, int ordem){
     int j, temp1, temp2;
-    for (int i = 1; i < p->qtde; i++) {
+    for (int i = 1; i < p->qtdElementos; i++) {
         temp1 = p->chave[i];
         temp2 = p->filho[i];
         for (j = i; j > 0 && temp1 < p->chave[j - 1]; j--) {
@@ -29,13 +47,13 @@ void ordenarPagina(Pagina *p, int ordem){
 
 void inserirElemento(Pagina *p, int chave){
 
-    p->chave[p->qtde] = chave;
-    p->qtde++;
-    ordenarPagina(p, p->qtde);
-    if(p->qtde > p->ordem){
+    p->chave[p->qtdElementos] = chave;
+    p->qtdElementos++;
+    ordenarPagina(p, p->qtdElementos);
+    if(p->qtdElementos > p->ordem){
 
         Pagina *novaPagina = criaPagina(p->ordem);
-        for(int j = 0, k = p->qtde/2 + 1; k < p->qtde; ++k, ++j){
+        for(int j = 0, k = p->qtdElementos/2 + 1; k < p->qtdElementos; ++k, ++j){
             novaPagina->chave[j] = p->chave[k];
         }
         //definir pai
@@ -45,8 +63,8 @@ void inserirElemento(Pagina *p, int chave){
             Pagina *pai = (Pagina*) malloc(sizeof(Pagina));
             fread(pai, sizeof(Pagina), 1, fp); 
             fclose(fp);
-            inserirElemento(pai, p->qtde/2);
-            p->qtde = p->qtde/2 - 1;
+            inserirElemento(pai, p->qtdElementos/2);
+            p->qtdElementos = p->qtdElementos/2 - 1;
         }
         else{
             Pagina *novaRaiz = criaPagina(p->ordem);

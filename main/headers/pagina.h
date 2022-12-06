@@ -13,16 +13,17 @@ typedef struct pagina {
   int *filho;
   int ordem;
   int pai;
-  int prox;
-  int ant;
+  int indexProximaPagina;
+  int indexPaginaAnterior;
   int nivel;
-  int qtde;
+  int qtdElementos;
   int index;
   TipoPagina tipo;
 
 } Pagina;
 
 Pagina *criaPagina(int ordem);
+Pagina criarPagina(int ordem, int tipo);
 void destroiPagina(Pagina *p);
 void inserirElemento(Pagina *p, int chave);
 void removerElemento(Pagina *p, int chave);

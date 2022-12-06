@@ -27,7 +27,7 @@ void imprimirPaciente(int id, int indexPagina){
     fread(&pag, sizeof(Pagina), 1, arquivoArvore);
 
     int posicaoPaciente;
-    for(int i = 0; i < pag.qtde; ++i){
+    for(int i = 0; i < pag.qtdElementos; ++i){
         if(pag.chave[i] == id){
             posicaoPaciente = pag.filho[i];
         }
