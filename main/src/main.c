@@ -2,33 +2,50 @@
 #include "../headers/b_plus_tree.h"
 
 void imprimirMenu(){
-    printf("--------------------------------\n");
-    printf("|       SISTEMA DE SAUDE       |\n");
-    printf("--------------------------------\n");
-    printf("| [ 1 ] BUSCAR PACIENTE        |\n");
-    printf("| [ 2 ] CADASTRAR PACIENTE     |\n");
-    printf("| [ 3 ] REMOVER PACIENTE       |\n");
-    printf("| [ 4 ] IMPRIMIR ARVORE        |\n");
-    printf("| [ 5 ] INTERVALO DE PACIENTES |\n");
-    printf("| [ 6 ] SAIR                   |\n");
-    printf("--------------------------------\n");
+    printf("------------------------------------------------------\n");
+    printf("|                  SISTEMA DE SAUDE                  |\n");
+    printf("------------------------------------------------------\n");
+    printf("|                                                    |\n");
+    printf("|  [ 1 ] BUSCAR PACIENTE                             |\n");
+    printf("|  [ 2 ] CADASTRAR PACIENTE                          |\n");
+    printf("|  [ 3 ] REMOVER PACIENTE                            |\n");
+    printf("|  [ 4 ] IMPRIMIR ARVORE                             |\n");
+    printf("|  [ 5 ] INTERVALO DE PACIENTES                      |\n");
+    printf("|  [ 6 ] SAIR                                        |\n");
+    printf("|                                                    |\n");
+    printf("------------------------------------------------------\n");
+}
+
+void flush_in(){ 
+    int ch;
+    while( (ch = fgetc(stdin)) != EOF && ch != '\n' ){}
 }
 
 Paciente lerDadosPaciente(){
     Paciente novoPaciente;
 
+    flush_in();
     printf("Digite o nome do paciente: ");
-    scanf("%s", novoPaciente.nome);
+    scanf("%[^\n]", novoPaciente.nome);
+
     printf("Digite o ano de nascimento do paciente: ");
     scanf("%d", &novoPaciente.anoNascimento);
+
+    flush_in();
     printf("Digite o CPF do paciente: ");
     scanf("%s", novoPaciente.CPF);
+
+    flush_in();
     printf("Digite o endereco do paciente: ");
-    scanf("%s", novoPaciente.endereco);
+    scanf("%[^\n]", novoPaciente.endereco);
+
+    flush_in();
     printf("Digite o nome da Mae do paciente: ");
-    scanf("%s", novoPaciente.nomeMae);
+    scanf("%[^\n]", novoPaciente.nomeMae);
+
+    flush_in();
     printf("Digite o nome do Pai do paciente: ");
-    scanf("%s", novoPaciente.nomePai);
+    scanf("%[^\n]", novoPaciente.nomePai);
 
     return novoPaciente;
 }

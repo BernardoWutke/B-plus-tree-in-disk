@@ -2,6 +2,9 @@
 #include "../headers/pagina.h"
 #include "../headers/b_plus_tree.h"
 
+void fillLine(int size, char c){
+    while((size--) > 0) printf("%c", c);
+}
 
 void imprimirArquivo(){
     FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
@@ -40,11 +43,30 @@ void imprimirPaciente(int id, int indexPagina){
     fseek(arquivoRegistros, sizeof(Paciente) * posicaoPaciente, SEEK_SET);
     fread(&paciente, sizeof(Paciente), 1, arquivoRegistros);
 
-    printf("ID: %d\n", paciente.id);
-    printf("Ano de nascimento: %d\n", paciente.anoNascimento);
-    printf("Nome: %s\n", paciente.nome);
-    printf("Endereço: %s\n", paciente.endereco);
-    printf("Nome da mãe: %s\n", paciente.nomeMae);
-    printf("Nome do pai: %s\n", paciente.nomePai);
-    printf("CPF: %s\n", paciente.CPF);
+    printf("-------------------------------------------------------\n");
+    printf("|             F I C H A   P A C I E N T E             |\n");
+    printf("-------------------------------------------------------\n");
+    printf("| ID...........................................%06d |\n", paciente.id);
+    printf("| Ano de nascimento..............................%04d |\n", paciente.anoNascimento);
+    
+    printf("| Nome");
+    fillLine(47-strlen(paciente.nome), '.');
+    printf("%s |\n", paciente.nome);
+
+    printf("| Endereço");
+    fillLine(43-strlen(paciente.endereco), '.');
+    printf("%s |\n", paciente.endereco);
+
+    printf("| Nome da mãe");
+    fillLine(40-strlen(paciente.nomeMae), '.');
+    printf("%s |\n", paciente.nomeMae);
+
+    printf("| Nome do pai");
+    fillLine(40-strlen(paciente.nomePai), '.');
+    printf("%s |\n", paciente.nomePai);
+
+    printf("| CPF");
+    fillLine(48-strlen(paciente.CPF), '.');
+    printf("%s |\n", paciente.CPF);
+    printf("------------------------------------------------------\n\n");
 }
