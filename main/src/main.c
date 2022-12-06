@@ -23,7 +23,15 @@ int main(){
         scanf("%d", &opcao);
         
         if(opcao == 1){
-
+            int id, indexPagina;
+            printf("\nDigite o id do paciente: ");
+            scanf("%d", &id);
+            if(!buscarElemento(id, &indexPagina, bp_tree)){
+                printf("Paciente com ID %d nao existe!\n", id);
+            }
+            else{
+                imprimirPaciente(id, indexPagina);
+            }
         }
         else if(opcao == 2){
 

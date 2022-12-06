@@ -7,18 +7,19 @@
 void inicializarBP(BP_Tree *bp){
     // Tenta ler o arquivo base
 
-    FILE *fp = fopen(ARQUIVO_ARVORE, "wb");
+    FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
     // Se já tiver arquivo, carrega o cabeçalho em bp
-    if (fp != NULL) {
-        fread(&bp, sizeof(BP_Tree), 1, fp);
-        fclose(fp);
+    if (arquivoArvore != NULL) {
+        fread(&bp, sizeof(BP_Tree), 1, arquivoArvore);
+        fclose(arquivoArvore);
     }
     else{ // Se não cria um novo arquivo com um cabeçalho do zero
         bp->qtde = 0;
         bp->raiz = -1;
-        fp = fopen(ARQUIVO_ARVORE, "wb+");
-        fwrite(&bp, sizeof(BP_Tree), 1, fp);
-        fclose(fp);
+        arquivoArvore = fopen(ARQUIVO_ARVORE, "wb+");
+        fseek(arquivoArvore, 0, SEEK_SET);
+        fwrite(bp, sizeof(BP_Tree), 1, arquivoArvore);
+        fclose(arquivoArvore);
     }
 }
 
@@ -39,16 +40,13 @@ void imprimirArvore(){
 
 }
 
-int buscarElemento(int id, int *indexPagina){
+int buscarElemento(int id, int *indexPagina, BP_Tree bp_tree){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
     
     if(arquivoArvore == NULL){
         printf("Erro ao abrir o arquivo!\n");
         return false;
     }
-
-    BP_Tree bp_tree;
-    fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
 
     //verificar se a arvore possui raiz
     if(bp_tree.raiz == -1){
@@ -96,4 +94,22 @@ int buscarElemento(int id, int *indexPagina){
             fread(&pag, sizeof(Pagina), 1, arquivoArvore);
         }
     }
+}
+
+int inserirPaciente(Paciente paciente, BP_Tree bp_tree){
+    /*
+        Primeiro precisa definir o novo ID.
+        Sugestão: Criar um campo no header chamado nextID que salva o valor do próximo ID
+        Basicamente este campo vai ser a quantidade de pacientes cadastrados o i-ésimo paciente
+        tem o ID i.
+
+        Segundo problema é verificar se já possui alguma pagina na arvore, se não, precisa criar a primeira
+
+        Terceiro precisa chamar a função de busca para encontrar a posição e a pagina em que o novo paciente
+        será cadastrado
+
+        Inserir o paciente na pagina e ordenar ela
+
+        ## Tratar o overflow em uma outra função ##
+    */
 }

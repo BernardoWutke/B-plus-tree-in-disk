@@ -7,13 +7,10 @@ typedef struct bp_tree {
 } BP_Tree;
 
 
-
-
-
 void inicializarBP(BP_Tree *bp);
 void imprimirArvore();
-int  buscarID(int);
-int  inserirPaciente(Paciente a);
-int  removerPaciente(Paciente a);
+int  buscarElemento(int id, int* indexPagina, BP_Tree bp_tree);
+int  inserirPaciente(Paciente a, BP_Tree bp_tree);
+int  removerPaciente(Paciente a, BP_Tree bp_tree);
 
 #endif

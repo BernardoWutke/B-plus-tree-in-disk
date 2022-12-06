@@ -6,8 +6,10 @@
 #include<string.h>
 
 
-
+#define ARQUIVO_ARVORE "../binarios/arvore.bin"
+#define ARQUIVO_REGISTROS "../binarios/registros.bin"
 #define ORDEM 4
+
 
 // Path: main/headers/ultil.c
 
@@ -27,8 +29,8 @@ typedef struct paciente{
 } Paciente;
 
 void imprimirArquivo();
+void imprimirPaciente(int id, int indexPagina);
 
-#define ARQUIVO_ARVORE "../binarios/arvore.bin"
 
 #endif 
 
