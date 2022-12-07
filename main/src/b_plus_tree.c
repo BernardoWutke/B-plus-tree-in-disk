@@ -148,11 +148,12 @@ void inserirPaciente(Paciente paciente){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
     FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
     if(arquivoRegistros == NULL) 
-        arquivoRegistros = fopen(ARQUIVO_REGISTROS , "wb+");
+    arquivoRegistros = fopen(ARQUIVO_REGISTROS , "wb+");
 
     BP_Tree bp_tree;
     fseek(arquivoArvore, 0, SEEK_SET);
     fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
+    Pagina pag;
     
     /*
         Primeiro precisa definir o novo ID.
@@ -160,12 +161,11 @@ void inserirPaciente(Paciente paciente){
         Basicamente este campo vai ser a quantidade de pacientes cadastrados. O i-ésimo paciente
         tem o ID i.
     */
-    int id = 0; // mudar isso aqui para calcular o id corretamente;
+    int id = bp_tree.proximoID++;; // mudar isso aqui para calcular o id corretamente;
 
 
     //verificar se já possui alguma pagina na arvore, se não, precisa criar a primeira
     if(bp_tree.raiz == -1){
-        Pagina pag;
         inicializarPagina(&pag, bp_tree.ordem, FOLHA);
         pag.index = 0;
         pag.ordem = bp_tree.ordem;
@@ -182,7 +182,24 @@ void inserirPaciente(Paciente paciente){
         fwrite(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
         fseek(arquivoArvore, sizeof(BP_Tree), SEEK_SET);
         fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);
-    } 
+    }
+    else{
+        int indexPagina;
+        buscarPaciente(id, &indexPagina);
+        fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * indexPagina), SEEK_SET);
+        fread(&pag, sizeof(Pagina), 1, arquivoArvore);
+
+        pag.chave[pag.qtdElementos] = id;
+        pag.filho[pag.qtdElementos] = id*sizeof(Paciente);
+        pag.qtdElementos++;
+        paciente.id = id;
+
+        fwrite(&paciente, sizeof(Paciente) * id, 1, arquivoRegistros);
+        fseek(arquivoArvore, 0, SEEK_SET);
+        fwrite(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
+        fseek(arquivoArvore, sizeof(BP_Tree)  + (sizeof(Pagina) * pag.index), SEEK_SET);
+        fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);
+    }
     /*
         Terceiro precisa chamar a função de busca para encontrar a posição e a pagina em que o novo paciente
         será cadastrado
