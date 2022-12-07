@@ -4,14 +4,14 @@
     
 void imprimirArvoreHeaderReferencia(BP_Tree *bp){
     printf("Ordem: %d \n", bp->ordem);
-    printf("Quantidade: %d \n", bp->qtde);
+    printf("Quantidade: %d \n", bp->qtdPaginas);
     printf("Raiz: %d \n", bp->raiz);
 }
 
-void inicializarBP(){
+/* void inicializarBP(){
   BP_Tree arvore;
   arvore.ordem   = ORDEM;
-  arvore.qtde    = 0;
+  arvore.qtdPaginas    = 0;
   arvore.raiz    = -1;
   
   
@@ -25,6 +25,23 @@ void inicializarBP(){
   
  
   fclose(arquivoArvore);
+} */
+
+void inicializarBP(){
+    FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
+
+    if (arquivoArvore == NULL) {
+        BP_Tree arvore;
+        arvore.ordem = ORDEM;
+        arvore.qtdPaginas = 0;
+        arvore.raiz = -1;
+        arvore.proximoID = 0;
+
+        arquivoArvore = fopen(ARQUIVO_ARVORE, "wb+");
+        fwrite(&arvore, sizeof(BP_Tree), 1, arquivoArvore);
+    }
+    
+    fclose(arquivoArvore);
 }
 
 void imprimirPagina(Pagina pag){
@@ -56,7 +73,7 @@ void imprimirArvoreHeader(){
   BP_Tree bp;
   fread(&bp, sizeof(BP_Tree), 1, fp);
   printf("Ordem: %d \n", bp.ordem);
-  printf("Quantidade: %d \n", bp.qtde);
+  printf("Quantidade: %d \n", bp.qtdPaginas);
   printf("Raiz: %d \n", bp.raiz);
   printf("===============================\n");
   Pagina pag;
@@ -68,7 +85,7 @@ void imprimirArvoreHeader(){
   fclose(fp);
 }
 
-int buscarElemento(int id, int *indexPagina){
+int buscarPaciente(int id, int *indexPagina){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
     
     if(arquivoArvore == NULL){
@@ -85,8 +102,6 @@ int buscarElemento(int id, int *indexPagina){
         fclose(arquivoArvore);
         return false;
     }
-
-    printf("teste\n");
 
     Pagina pag;
     fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * bp_tree.raiz), SEEK_SET);
@@ -150,7 +165,6 @@ void inserirPaciente(Paciente paciente){
 
     //verificar se já possui alguma pagina na arvore, se não, precisa criar a primeira
     if(bp_tree.raiz == -1){
-        printf("%d\n", bp_tree.ordem);
         Pagina pag;
         inicializarPagina(&pag, bp_tree.ordem, FOLHA);
         pag.index = 0;
@@ -163,7 +177,7 @@ void inserirPaciente(Paciente paciente){
         fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
 
         fseek(arquivoArvore, 0, SEEK_SET);
-        bp_tree.qtde++;
+        bp_tree.qtdPaginas++;
         bp_tree.raiz = 0;
         fwrite(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
         fseek(arquivoArvore, sizeof(BP_Tree), SEEK_SET);
@@ -179,5 +193,4 @@ void inserirPaciente(Paciente paciente){
     */
     fclose(arquivoRegistros);
     fclose(arquivoArvore);
-    printf("final\n");
 }

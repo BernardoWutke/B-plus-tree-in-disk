@@ -67,7 +67,7 @@ int main(){
         if(opcao == 1){ // buscar paciente pelo ID 
             printf("\nDigite o id do paciente: ");
             scanf("%d", &id);
-            if(!buscarElemento(id, &indexPagina)){
+            if(!buscarPaciente(id, &indexPagina)){
                 printf("Paciente com ID %d nao existe!\n", id);
             }
             else{

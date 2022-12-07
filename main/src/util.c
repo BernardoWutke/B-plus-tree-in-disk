@@ -17,7 +17,7 @@ void imprimirArquivo(){
   BP_Tree *bp;
   fread(&bp, sizeof(BP_Tree), 1, fp);
   printf("Ordem: %d \n", bp->ordem);
-  printf("Quantidade: %d \n", bp->qtde);
+  printf("Quantidade: %d \n", bp->qtdPaginas);
   printf("Raiz: %d \n", bp->raiz);
   fclose(fp);
 }
@@ -47,12 +47,17 @@ void imprimirPaciente(int id, int indexPagina){
     printf("|             F I C H A   P A C I E N T E             |\n");
     printf("-------------------------------------------------------\n");
     printf("| ID...........................................%06d |\n", paciente.id);
-    printf("| Ano de nascimento..............................%04d |\n", paciente.anoNascimento);
     
     printf("| Nome");
     fillLine(47-strlen(paciente.nome), '.');
     printf("%s |\n", paciente.nome);
+    
+    printf("| Ano de nascimento..............................%04d |\n", paciente.anoNascimento);
 
+    printf("| CPF");
+    fillLine(48-strlen(paciente.CPF), '.');
+    printf("%s |\n", paciente.CPF);
+    
     printf("| Endereço");
     fillLine(43-strlen(paciente.endereco), '.');
     printf("%s |\n", paciente.endereco);
@@ -65,8 +70,6 @@ void imprimirPaciente(int id, int indexPagina){
     fillLine(40-strlen(paciente.nomePai), '.');
     printf("%s |\n", paciente.nomePai);
 
-    printf("| CPF");
-    fillLine(48-strlen(paciente.CPF), '.');
-    printf("%s |\n", paciente.CPF);
-    printf("------------------------------------------------------\n\n");
+    printf("-------------------------------------------------------\n\n");
+
 }
