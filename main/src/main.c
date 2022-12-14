@@ -1,5 +1,6 @@
 #include "../headers/util.h"
 #include "../headers/b_plus_tree.h"
+char num_paciente = 'a';
 
 void imprimirMenu(){
     printf("------------------------------------------------------\n");
@@ -23,7 +24,7 @@ void flush_in(){
 
 Paciente lerDadosPaciente(){
     Paciente novoPaciente;
-
+    
     flush_in();
     printf("Digite o nome do paciente: ");
     scanf("%[^\n]", novoPaciente.nome);
@@ -75,7 +76,16 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            inserirPaciente(lerDadosPaciente());
+            num_paciente++;
+            Paciente p;
+            strcpy(p.nome, "a");
+            p.anoNascimento = 1;
+            strcpy(p.CPF, "a");
+            strcpy(p.endereco, "a");
+            strcpy(p.nomeMae, "a");
+            strcpy(p.nomePai, "a");
+            inserirPaciente(p);
+            // inserirPaciente(lerDadosPaciente());
         }
         else if(opcao == 3){
 

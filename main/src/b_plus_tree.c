@@ -1,31 +1,14 @@
 #include"../headers/b_plus_tree.h"
 #include"../headers/pagina.h"
 
+void BPTreeCorrigirOverflow(BP_Tree *arvore, Pagina pagina) ;
+void  inserirEmFolha(Pagina* pagina, int chave, int regIndex);
     
 void imprimirArvoreHeaderReferencia(BP_Tree *bp){
     printf("Ordem: %d \n", bp->ordem);
     printf("Quantidade: %d \n", bp->qtdPaginas);
     printf("Raiz: %d \n", bp->raiz);
 }
-
-/* void inicializarBP(){
-  BP_Tree arvore;
-  arvore.ordem   = ORDEM;
-  arvore.qtdPaginas    = 0;
-  arvore.raiz    = -1;
-  
-  
-  FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
-
-
-  if (arquivoArvore == NULL) {
-    arquivoArvore = fopen(ARQUIVO_ARVORE, "wb+");
-    fwrite(&arvore, sizeof(BP_Tree), 1, arquivoArvore);
-  }
-  
- 
-  fclose(arquivoArvore);
-} */
 
 void inicializarBP(){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");
@@ -75,6 +58,7 @@ void imprimirArvoreHeader(){
   printf("Ordem: %d \n", bp.ordem);
   printf("Quantidade: %d \n", bp.qtdPaginas);
   printf("Raiz: %d \n", bp.raiz);
+  printf("proximo ID: %d\n", bp.proximoID);
   printf("===============================\n");
   Pagina pag;
   //imprimir paginas
@@ -161,7 +145,7 @@ void inserirPaciente(Paciente paciente){
         Basicamente este campo vai ser a quantidade de pacientes cadastrados. O i-ésimo paciente
         tem o ID i.
     */
-    int id = bp_tree.proximoID++;; // mudar isso aqui para calcular o id corretamente;
+    int id = bp_tree.proximoID++; // mudar isso aqui para calcular o id corretamente;
 
 
     //verificar se já possui alguma pagina na arvore, se não, precisa criar a primeira
@@ -186,28 +170,64 @@ void inserirPaciente(Paciente paciente){
     else{
         int indexPagina;
         buscarPaciente(id, &indexPagina);
+
         fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * indexPagina), SEEK_SET);
         fread(&pag, sizeof(Pagina), 1, arquivoArvore);
-
+   
         pag.chave[pag.qtdElementos] = id;
-        pag.filho[pag.qtdElementos] = id*sizeof(Paciente);
+        pag.filho[pag.qtdElementos] = id;
         pag.qtdElementos++;
+        
         paciente.id = id;
 
-        fwrite(&paciente, sizeof(Paciente) * id, 1, arquivoRegistros);
+        fseek(arquivoRegistros, sizeof(Paciente)*id, SEEK_SET);
+        fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
+
         fseek(arquivoArvore, 0, SEEK_SET);
         fwrite(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
+
         fseek(arquivoArvore, sizeof(BP_Tree)  + (sizeof(Pagina) * pag.index), SEEK_SET);
-        fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);
+        fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);   
+        BPTreeCorrigirOverflow(&bp_tree, pag);
+
     }
-    /*
-        Terceiro precisa chamar a função de busca para encontrar a posição e a pagina em que o novo paciente
-        será cadastrado
-
-        Inserir o paciente na pagina e ordenar ela
-
-        ## Tratar o overflow em uma outra função ##
-    */
+    
+    // Tratar o overflow em uma outra função
     fclose(arquivoRegistros);
     fclose(arquivoArvore);
+}
+
+void inserirEmFolha(Pagina* pagina, int chave, int regIndex) {
+    pagina->chave[pagina->qtdElementos] = chave;
+    pagina->filho[pagina->qtdElementos] = regIndex;
+    pagina->qtdElementos++;
+}
+
+void BPTreeCorrigirOverflow(BP_Tree *arvore, Pagina pagina) {
+    
+
+  if(pagina.qtdElementos > ORDEM){
+    Pagina paginaIrma;
+    inicializarPagina(&paginaIrma, arvore->ordem, FOLHA);
+
+    for (int i = ORDEM/2+1; i <= pagina.qtdElementos; i++){
+      inserirEmFolha(&paginaIrma, pagina.chave[i], pagina.filho[i]);
+    }
+
+    pagina.qtdElementos -= paginaIrma.qtdElementos;
+
+    if (pagina.indexProximaPagina > -1){
+      paginaIrma.indexProximaPagina = pagina.indexProximaPagina;
+    }
+    pagina.indexProximaPagina = paginaIrma.index;
+
+    if (pagina.pai < 0){
+      Pagina paginaPai;
+      inicializarPagina(&pagina, arvore->ordem, FOLHA);
+    }
+    
+  }
+  else{
+     return;
+  }  
 }
