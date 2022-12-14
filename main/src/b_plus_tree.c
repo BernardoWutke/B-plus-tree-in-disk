@@ -1,8 +1,5 @@
 #include"../headers/b_plus_tree.h"
 #include"../headers/pagina.h"
-
-void BPTreeCorrigirOverflow(BP_Tree *arvore, Pagina pagina) ;
-void  inserirEmFolha(Pagina* pagina, int chave, int regIndex);
     
 void imprimirArvoreHeaderReferencia(BP_Tree *bp){
     printf("Ordem: %d \n", bp->ordem);
@@ -188,7 +185,6 @@ void inserirPaciente(Paciente paciente){
 
         fseek(arquivoArvore, sizeof(BP_Tree)  + (sizeof(Pagina) * pag.index), SEEK_SET);
         fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);   
-        BPTreeCorrigirOverflow(&bp_tree, pag);
 
     }
     
@@ -201,33 +197,4 @@ void inserirEmFolha(Pagina* pagina, int chave, int regIndex) {
     pagina->chave[pagina->qtdElementos] = chave;
     pagina->filho[pagina->qtdElementos] = regIndex;
     pagina->qtdElementos++;
-}
-
-void BPTreeCorrigirOverflow(BP_Tree *arvore, Pagina pagina) {
-    
-
-  if(pagina.qtdElementos > ORDEM){
-    Pagina paginaIrma;
-    inicializarPagina(&paginaIrma, arvore->ordem, FOLHA);
-
-    for (int i = ORDEM/2+1; i <= pagina.qtdElementos; i++){
-      inserirEmFolha(&paginaIrma, pagina.chave[i], pagina.filho[i]);
-    }
-
-    pagina.qtdElementos -= paginaIrma.qtdElementos;
-
-    if (pagina.indexProximaPagina > -1){
-      paginaIrma.indexProximaPagina = pagina.indexProximaPagina;
-    }
-    pagina.indexProximaPagina = paginaIrma.index;
-
-    if (pagina.pai < 0){
-      Pagina paginaPai;
-      inicializarPagina(&pagina, arvore->ordem, FOLHA);
-    }
-    
-  }
-  else{
-     return;
-  }  
 }
