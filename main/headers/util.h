@@ -26,6 +26,8 @@ typedef struct paciente{
     char nomeMae[200];
     char nomePai[200];
     char CPF[20];
+    int foiDeletado;
+    
 } Paciente;
 
 void imprimirArquivo();
