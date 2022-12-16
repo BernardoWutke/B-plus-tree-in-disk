@@ -1,5 +1,6 @@
 #include"../headers/b_plus_tree.h"
 #include"../headers/pagina.h"
+#include"../headers/util.h"
 
 void addPagina(Pagina pag,int index);
 void imprimirArvoreHeaderReferencia(BP_Tree *bp){
@@ -17,7 +18,7 @@ void inicializarBP(){
         arvore.ordem = ORDEM;
         arvore.qtdPaginas = 0;
         arvore.raiz = -1;
-        arvore.proximoID = 0;
+        arvore.qtdPacientes = 0;
 
         arquivoArvore = fopen(ARQUIVO_ARVORE, "wb+");
         fwrite(&arvore, sizeof(BP_Tree), 1, arquivoArvore);
@@ -26,26 +27,46 @@ void inicializarBP(){
     fclose(arquivoArvore);
 }
 
-void imprimirPagina(Pagina pag){
-    printf("Tipo: %d \n", pag.tipo);
-    printf("Index: %d \n", pag.index);
-    printf("Index pai: %d \n", pag.pai);
-    printf("Qtd Elementos: %d \n", pag.qtdElementos);
-    printf("Chaves: ");
-    for(int i = 0; i < pag.qtdElementos; ++i){
-        printf("%d ", pag.chave[i]);
-    }
-    printf("\n");
-    printf("Filhos: ");
+void imprimirPagina(Pagina pag, int isRoot){
+    printf("------------------------------------------------------\n");
+    if(isRoot)
+        printf("|          P A G I N A    %03d    # R A I Z #         |\n",  pag.index);
+    else
+        printf("|                 P A G I N A    %03d                 |\n",  pag.index);
+    printf("------------------------------------------------------\n");
     
-    for(int i = 0; i < pag.qtdElementos + 1; ++i){
-        printf("%d ", pag.filho[i]);
+    printf("| Tipo.");
+    fillLine((pag.tipo == FOLHA ? 40 : 38), '.');
+    printf("%s |\n", (pag.tipo == FOLHA ? "FOLHA" : "INTERNA"));
+
+    if(!isRoot){
+        printf("| Index pai.");
+        fillLine(37, '.');
+        printf("%03d |\n", pag.pai);
     }
-    printf("\n");
+    
+    printf("| Qtd Elementos.");
+    fillLine(33, '.');
+    printf("%03d |\n", pag.qtdElementos);
+
+    printf("| Chaves.");
+    fillLine(44-(4*pag.qtdElementos), '.');
+    for(int i = 0; i < pag.qtdElementos; ++i){
+        printf("%03d ", pag.chave[i]);
+    }
+    printf("|\n");
+    printf("| %s", (pag.tipo == FOLHA ? "Index registros." : "Filhos."));
+    fillLine((pag.tipo == FOLHA ? 35 - 4*pag.qtdElementos : 44 - 4*(pag.qtdElementos + 1)), '.');
+    for(int i = 0; i < pag.qtdElementos; ++i){
+        printf("%03d ", pag.filho[i]);
+    }
+    if(pag.tipo == INTERNA)
+        printf("%03d ", pag.filho[pag.qtdElementos]);
+    printf("|\n");
+    printf("------------------------------------------------------\n\n");
 }
 
-void imprimirArvoreHeader(){
-  printf("===============================\n");
+void imprimirArvore(){
   FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
 
 
@@ -56,24 +77,39 @@ void imprimirArvoreHeader(){
   
   BP_Tree bp;
   fread(&bp, sizeof(BP_Tree), 1, fp);
-  printf("Ordem: %d \n", bp.ordem);
-  printf("Quantidade: %d \n", bp.qtdPaginas);
-  printf("Raiz: %d \n", bp.raiz);
-  printf("proximo ID: %d\n", bp.proximoID);
-  Pagina pag;
-  //imprimir paginas
-  int contadorPagina = sizeof(BP_Tree);
-  while(fread(&pag, sizeof(Pagina), 1, fp)){
-    contadorPagina += sizeof(Pagina);
-    fseek(fp, contadorPagina, SEEK_SET);
-    printf("===============================\n");
-    imprimirPagina(pag);
-    printf("===============================\n");
-  }
-  fclose(fp);
+
+    printf("------------------------------------------------------\n");
+    printf("|                    A R V O R E                     |\n");
+    printf("------------------------------------------------------\n");
+
+    printf("| Ordem.");
+    fillLine(41, '.');
+    printf("%03d | \n", bp.ordem);
+
+    printf("| Raiz.");
+    fillLine(42, '.');
+    printf("%03d |\n", bp.raiz);
+
+    printf("| Quantidade de paginas.");
+    fillLine(25, '.');
+    printf("%03d |\n", bp.qtdPaginas);
+
+    printf("| Quantidade de pacientes.");
+    fillLine(23, '.');
+    printf("%03d |\n", bp.qtdPacientes);
+    printf("------------------------------------------------------\n");
+    Pagina pag;
+    //imprimir paginas
+    int contadorPagina = sizeof(BP_Tree);
+    while(fread(&pag, sizeof(Pagina), 1, fp)){
+        contadorPagina += sizeof(Pagina);
+        fseek(fp, contadorPagina, SEEK_SET);
+        imprimirPagina(pag, pag.pai == -1);
+    }
+    fclose(fp);
 }
 
-int buscarPaginaLivre(int qtdPaginas){
+int buscarPaginaLivre(){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
     fseek(arquivoArvore, sizeof(BP_Tree), SEEK_SET);
     Pagina p;
@@ -82,18 +118,20 @@ int buscarPaginaLivre(int qtdPaginas){
         if(p.foiDeletada) break;
         k++;
     }
+    fclose(arquivoArvore);
     return k;
 }
 
-int buscarRegistroLivre(FILE *arquivoRegistros, int qtdRegistros){
-    fseek(arquivoRegistros, sizeof(Paciente), SEEK_SET);
+int buscarRegistroLivre(){
+    FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
+    fseek(arquivoRegistros, 0, SEEK_SET);
     Paciente p;
-    fread(&p, sizeof(Paciente), 1, arquivoRegistros);
     int k = 0;
-    while(!p.foiDeletado && k < qtdRegistros) {
+    while(fread(&p, sizeof(Paciente), 1, arquivoRegistros)) {
+        if(p.foiDeletado) break;
         k++;
-        fread(&p, sizeof(Paciente), 1, arquivoRegistros);
     }
+    fclose(arquivoRegistros);
     return k;
 }
 
@@ -165,26 +203,20 @@ void inserirNaPagina(Pagina* pagina, int chave, int regIndex) {
 void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
 
     Pagina novaPagina;
-    int indexNovaPagina = buscarPaginaLivre(bp_tree->qtdPaginas);
+    int indexNovaPagina = buscarPaginaLivre();
     inicializarPagina(&novaPagina, bp_tree->ordem, indexNovaPagina, pagina->tipo);
 
     int meio = pagina->qtdElementos >> 1;
 
-    
-    novaPagina.index = buscarPaginaLivre(bp_tree->qtdPaginas);
     novaPagina.qtdElementos = meio+1;
 
     //fazendo copia dos elementos para a nova pagina
-
-
-    
 
     for(int i = meio, k = 0; i <= pagina->qtdElementos; i++, k++){
         novaPagina.chave[k] = pagina->chave[i];
         novaPagina.filho[k] = pagina->filho[i];
         if(pagina->tipo == INTERNA){
             FILE *arquivoAvore = fopen(ARQUIVO_ARVORE, "rb+");
-            printf("CAIU NO LAÇO \n");
             Pagina tempPagina;
             fseek(arquivoAvore, sizeof(BP_Tree) + sizeof(Pagina)*pagina->filho[k], SEEK_SET);
             fread(&tempPagina, sizeof(Pagina), 1, arquivoAvore);
@@ -196,8 +228,6 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
     pagina->qtdElementos -= (meio+1);
     addPagina(novaPagina, novaPagina.index);
     bp_tree->qtdPaginas++;
-
-    printf("#\n");
 
     if(pagina->index == bp_tree->raiz){
         
@@ -239,8 +269,6 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
             fixOverflow(bp_tree, &pai);
             addPagina(pai, pai.index);    
         }
-        printf("%d\n", pai.qtdElementos);
-        
     }
 }
 
@@ -248,16 +276,18 @@ void inserirPaciente(Paciente paciente){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
     FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
     if(arquivoRegistros == NULL) 
-    arquivoRegistros = fopen(ARQUIVO_REGISTROS , "wb+");
+        arquivoRegistros = fopen(ARQUIVO_REGISTROS , "wb+");
 
     BP_Tree bp_tree;
+    Pagina pag;
+
     fseek(arquivoArvore, 0, SEEK_SET);
     fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
-    Pagina pag;
     
-    int id = bp_tree.proximoID++; // precisa mudar
+    int id = buscarRegistroLivre(); // precisa mudar
 
-
+    bp_tree.qtdPacientes++;
+    paciente.foiDeletado = 0;
     //verificar se já possui alguma pagina na arvore, se não, precisa criar a primeira
     if(bp_tree.raiz == -1){
         inicializarPagina(&pag, bp_tree.ordem, 0, FOLHA);
@@ -304,6 +334,10 @@ void inserirPaciente(Paciente paciente){
         fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);   
 
     }
+
+    printf("\nPaciente cadastrado com sucesso!\n");
+    printf("ID do paciente -> %d.\n\n", paciente.id);
+
     fclose(arquivoRegistros);
     fclose(arquivoArvore);
 }
@@ -313,4 +347,58 @@ void addPagina(Pagina pag,int index){
     fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * index), SEEK_SET);
     fwrite(&pag, sizeof(Pagina), 1, arquivoArvore);
     fclose(arquivoArvore);
+}
+
+void Delete(int id) {
+    int indexPagina;
+    buscarPaciente(id, &indexPagina);
+    
+    Pagina pagina;
+    FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
+    fseek(arquivoArvore, sizeof(BP_Tree) + indexPagina*sizeof(Pagina), SEEK_SET);
+    fread(&pagina, sizeof(Pagina), 1, arquivoArvore);
+
+	int del = 0; 
+    while(pagina.chave[del] != id) del++;
+
+    Paciente paciente;
+    FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
+    fseek(arquivoRegistros, id*sizeof(Paciente), SEEK_SET);
+    fread(&paciente, sizeof(Paciente), 1, arquivoRegistros);
+    paciente.foiDeletado = 1;
+    fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
+
+    
+
+	void* delChild = pagina->filho[del];
+	for (int i = del; i < pagina->qtdElementos - 1; i++) {
+		pagina->chave[i] = pagina->chave[i + 1];
+		pagina->filho[i] = pagina->filho[i + 1];
+	}
+	pagina->qtdElementos--;
+	if (pagina->tipo == INTERNA) { // make links on leaves
+		Pagina* firstChild = (Pagina*)(pagina->filho[0]);
+		if (firstChild->tipo == FOLHA) { // which means delChild is also a leaf
+			Pagina* temp = (Pagina*)delChild;
+			int prevChild = temp->indexPaginaAnterior;
+			int succChild = temp->indexProximaPagina;
+			if (prevChild != NULL) prevChild->next = succChild;
+			if (succChild != NULL) succChild->last = prevChild;
+		}
+	}
+	if (del == 0 && !pagina->isRoot) { // some fathers' id should be changed
+		Pagina* temp = pagina;
+		while (!temp->isRoot && temp == temp->father->filho[0]) {
+			temp->father->chave[0] = pagina->chave[0];
+			temp = temp->father;
+		}
+		if (!temp->isRoot) {
+			temp = temp->father;
+			int i = Binary_Search(temp, id);
+			temp->chave[i] = pagina->chave[0];
+		}
+	}
+	free(delChild);
+	if (pagina->qtdElementos * 2 < MaxChildNumber)
+		Redistribute(pagina);
 }

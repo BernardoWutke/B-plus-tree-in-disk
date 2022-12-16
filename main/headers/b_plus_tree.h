@@ -3,12 +3,12 @@
 #include"../headers/util.h"
 
 typedef struct  {
-  int ordem, qtdPaginas, raiz, proximoID;
+  int ordem, qtdPaginas, raiz, qtdPacientes;
 } BP_Tree;
 
 
 void inicializarBP();
-void imprimirArvoreHeader();
+void imprimirArvore();
 int  buscarPaciente(int id, int* indexPagina);
 void inserirPaciente(Paciente a);
 int  removerPaciente(Paciente a, BP_Tree bp_tree);

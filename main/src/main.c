@@ -52,12 +52,9 @@ Paciente lerDadosPaciente(){
 }
 
 int main(){
-
-
     BP_Tree bp_tree;
     inicializarBP(); // carrega o cabeçalho da arvore
 
-    printf("teste\n");
     int opcao = -1;
 
     int id, indexPagina;
@@ -93,7 +90,7 @@ int main(){
 
         }
         else if(opcao == 4){
-            imprimirArvoreHeader();
+            imprimirArvore();
 
         }
         else if(opcao == 5){
