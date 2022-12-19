@@ -200,8 +200,49 @@ void inserirNaPagina(Pagina* pagina, int chave, int regIndex) {
     pagina->qtdElementos++;
 }
 
-void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
+void ordenarInterna(Pagina *pagina) {
+  int j, temp;
+  FILE *arquivoArvore =  fopen(ARQUIVO_ARVORE, "rb+");
 
+  
+  for (int i = 1; i < pagina->qtdElementos; i++) {
+    temp = pagina->chave[i];
+    for (j = i; j > 0 && temp < pagina->chave[j - 1]; j--) {
+      pagina->chave[j] = pagina->chave[j - 1];
+    }
+    pagina->chave[j] = temp;
+  }
+  
+  temp = 0;
+  
+  Pagina filhoI, filhoJ;
+  
+  for(int i = 0; i < pagina->qtdElementos + 1; i++){
+    fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pagina->filho[i]), SEEK_SET);
+    fread(&filhoI, sizeof(Pagina), 1, arquivoArvore);
+  }
+
+  for (int i = 0; i < pagina->qtdElementos; i++) {
+    //Ler o filho I
+    fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pagina->filho[i]), SEEK_SET);
+    fread(&filhoI, sizeof(Pagina), 1, arquivoArvore);
+    for (j = i + 1; j < pagina->qtdElementos + 1; j++) {   
+      //Ler o filho J
+      fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pagina->filho[j]), SEEK_SET);
+      fread(&filhoJ, sizeof(Pagina), 1, arquivoArvore);
+      //Se a primira chave do filho i fo menor do que a primeira do filho j
+      //troca os filhos de lugar
+      if (filhoJ.chave[0] < filhoI.chave[0]) {
+        temp = filhoI.index;
+        pagina->filho[i] = filhoJ.index;
+        pagina->filho[j] = temp;
+      }
+    }
+  }
+}
+
+
+void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
     Pagina novaPagina;
     int indexNovaPagina = buscarPaginaLivre();
     inicializarPagina(&novaPagina, bp_tree->ordem, indexNovaPagina, pagina->tipo);
@@ -227,6 +268,7 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
 
     pagina->qtdElementos -= (meio+1);
     addPagina(novaPagina, novaPagina.index);
+    
     bp_tree->qtdPaginas++;
 
     if(pagina->index == bp_tree->raiz){
@@ -241,16 +283,18 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
         novaPagina.pai = indexRaiz;
         pagina->pai = indexRaiz;
         addPagina(novaPagina, novaPagina.index);
-        addPagina(raiz, raiz.index);
 
+        addPagina(raiz, raiz.index);
+        ordenarInterna(&raiz);
         bp_tree->raiz = indexRaiz;
         bp_tree->qtdPaginas++;
+
+        
 
     }
     else{
         novaPagina.pai = pagina->pai;
         addPagina(novaPagina, novaPagina.index);
-
         // acessar a pagina pai da pagina atual
         FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
         Pagina pai;
@@ -262,14 +306,22 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
         pai.filho[pai.qtdElementos] = novaPagina.index;
         fclose(arquivoArvore);
         addPagina(pai, pai.index);
+        ordenarInterna(&pai);
+        
         
         // verificar se a pagina pai deu overflow
         if(pai.qtdElementos > pai.ordem){
             // se deu, chama a função de fix dnv
             fixOverflow(bp_tree, &pai);
-            addPagina(pai, pai.index);    
+            addPagina(pai, pai.index); 
+            ordenarInterna(&pai); 
+            
+
         }
+        
+
     }
+    
 }
 
 void inserirPaciente(Paciente paciente){
@@ -284,7 +336,7 @@ void inserirPaciente(Paciente paciente){
     fseek(arquivoArvore, 0, SEEK_SET);
     fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
     
-    int id = buscarRegistroLivre(); // precisa mudar
+    int indexRegistro = buscarRegistroLivre(); // precisa mudar
 
     bp_tree.qtdPacientes++;
     paciente.foiDeletado = 0;
@@ -294,9 +346,8 @@ void inserirPaciente(Paciente paciente){
 
         pag.ordem = bp_tree.ordem;
 
-        inserirNaPagina(&pag, 0, 0);
+        inserirNaPagina(&pag, paciente.id, 0);
 
-        paciente.id = 0;
         
         fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
 
@@ -309,14 +360,15 @@ void inserirPaciente(Paciente paciente){
     }
     else{
         int indexPagina;
-        buscarPaciente(id, &indexPagina);
+        buscarPaciente(paciente.id, &indexPagina);
 
         fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * indexPagina), SEEK_SET);
         fread(&pag, sizeof(Pagina), 1, arquivoArvore);
    
-        inserirNaPagina(&pag, id, id);
-        
-        paciente.id = id;
+        inserirNaPagina(&pag, paciente.id, indexRegistro);
+
+        ordenarPaginaFolha(&pag);
+
 
         if(pag.qtdElementos > pag.ordem){
             fixOverflow(&bp_tree, &pag);
@@ -324,7 +376,7 @@ void inserirPaciente(Paciente paciente){
 
 
 
-        fseek(arquivoRegistros, sizeof(Paciente)*id, SEEK_SET);
+        fseek(arquivoRegistros, sizeof(Paciente)*indexRegistro, SEEK_SET);
         fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
 
         fseek(arquivoArvore, 0, SEEK_SET);
@@ -349,7 +401,7 @@ void addPagina(Pagina pag,int index){
     fclose(arquivoArvore);
 }
 
-void Delete(int id) {
+void deletarPaciente(int id) {
     int indexPagina;
     buscarPaciente(id, &indexPagina);
     
@@ -366,39 +418,52 @@ void Delete(int id) {
     fseek(arquivoRegistros, id*sizeof(Paciente), SEEK_SET);
     fread(&paciente, sizeof(Paciente), 1, arquivoRegistros);
     paciente.foiDeletado = 1;
+    fseek(arquivoRegistros, -sizeof(Paciente), SEEK_CUR);
     fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
-
+    fclose(arquivoRegistros);
     
+	for (int i = del; i < pagina.qtdElementos - 1; i++) {
+		pagina.chave[i] = pagina.chave[i + 1];
+		pagina.filho[i] = pagina.filho[i + 1];
+	}
+	pagina.qtdElementos--;
 
-	void* delChild = pagina->filho[del];
-	for (int i = del; i < pagina->qtdElementos - 1; i++) {
-		pagina->chave[i] = pagina->chave[i + 1];
-		pagina->filho[i] = pagina->filho[i + 1];
-	}
-	pagina->qtdElementos--;
-	if (pagina->tipo == INTERNA) { // make links on leaves
-		Pagina* firstChild = (Pagina*)(pagina->filho[0]);
-		if (firstChild->tipo == FOLHA) { // which means delChild is also a leaf
-			Pagina* temp = (Pagina*)delChild;
-			int prevChild = temp->indexPaginaAnterior;
-			int succChild = temp->indexProximaPagina;
-			if (prevChild != NULL) prevChild->next = succChild;
-			if (succChild != NULL) succChild->last = prevChild;
-		}
-	}
-	if (del == 0 && !pagina->isRoot) { // some fathers' id should be changed
-		Pagina* temp = pagina;
-		while (!temp->isRoot && temp == temp->father->filho[0]) {
-			temp->father->chave[0] = pagina->chave[0];
-			temp = temp->father;
-		}
-		if (!temp->isRoot) {
-			temp = temp->father;
-			int i = Binary_Search(temp, id);
-			temp->chave[i] = pagina->chave[0];
-		}
-	}
-	free(delChild);
-	if (pagina->qtdElementos * 2 < MaxChildNumber)
-		Redistribute(pagina);
+    BP_Tree bp_tree;
+
+    fseek(arquivoArvore, 0, SEEK_SET);
+    fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
+    bp_tree.qtdPacientes--;
+    fseek(arquivoArvore, -sizeof(BP_Tree), SEEK_CUR);
+    fwrite(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
+    fseek(arquivoArvore,pagina.index*sizeof(Paciente), SEEK_CUR);
+    fwrite(&pagina, sizeof(Pagina), 1, arquivoArvore);
+
+	// if (pagina->tipo == INTERNA) { // make links on leaves
+	// 	Pagina* firstChild = (Pagina*)(pagina->filho[0]);
+	// 	if (firstChild->tipo == FOLHA) { // which means delChild is also a leaf
+	// 		Pagina* temp = (Pagina*)delChild;
+	// 		int prevChild = temp->indexPaginaAnterior;
+	// 		int succChild = temp->indexProximaPagina;
+	// 		if (prevChild != NULL) prevChild->next = succChild;
+	// 		if (succChild != NULL) succChild->last = prevChild;
+	// 	}
+	// }
+	// if (del == 0 && !pagina->isRoot) { // some fathers' id should be changed
+	// 	Pagina* temp = pagina;
+	// 	while (!temp->isRoot && temp == temp->father->filho[0]) {
+	// 		temp->father->chave[0] = pagina->chave[0];
+	// 		temp = temp->father;
+	// 	}
+	// 	if (!temp->isRoot) {
+	// 		temp = temp->father;
+	// 		int i = Binary_Search(temp, id);
+	// 		temp->chave[i] = pagina->chave[0];
+	// 	}
+	// }
+	// free(delChild);
+	// if (pagina->qtdElementos * 2 < MaxChildNumber)
+	// 	Redistribute(pagina);
+    fclose(arquivoArvore);
 }
+
+

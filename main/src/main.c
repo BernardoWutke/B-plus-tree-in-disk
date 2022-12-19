@@ -24,6 +24,14 @@ void flush_in(){
 
 Paciente lerDadosPaciente(){
     Paciente novoPaciente;
+
+    int _;
+    printf("Digite o ID do paciente: ");
+    scanf("%d", &novoPaciente.id);
+    while(buscarPaciente(novoPaciente.id, &_)){
+        printf("ID ja cadastrado! digite outro ID: ");
+        scanf("%d", &novoPaciente.id);
+    }
     
     flush_in();
     printf("Digite o nome do paciente: ");
@@ -75,19 +83,34 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            num_paciente++;
-            Paciente p;
-            strcpy(p.nome, "a");
-            p.anoNascimento = 1;
-            strcpy(p.CPF, "a");
-            strcpy(p.endereco, "a");
-            strcpy(p.nomeMae, "a");
-            strcpy(p.nomePai, "a");
-            inserirPaciente(p);
-            // inserirPaciente(lerDadosPaciente());
+            // num_paciente++;
+            // Paciente p;
+            // strcpy(p.nome, "a");
+            // p.anoNascimento = 1;
+            // strcpy(p.CPF, "a");
+            // strcpy(p.endereco, "a");
+            // strcpy(p.nomeMae, "a");
+            // strcpy(p.nomePai, "a");
+            // inserirPaciente(p);
+
+            inserirPaciente(lerDadosPaciente());
         }
         else if(opcao == 3){
-
+            printf("\nDigite o id do paciente: ");
+            scanf("%d", &id);
+            if(!buscarPaciente(id, &indexPagina)){
+                printf("Paciente com ID %d nao existe!\n", id);
+            }
+            else{
+                char c;
+                imprimirPaciente(id, indexPagina);
+                printf("Tem certeza que deseja excluir? (Y/N) ");
+                flush_in();
+                scanf("%c", &c);
+                if(c == 'y' || c == 'Y'){
+                    deletarPaciente(id);
+                }
+            }
         }
         else if(opcao == 4){
             imprimirArvore();

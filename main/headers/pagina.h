@@ -30,7 +30,7 @@ void inserirElemento(Pagina *p, int chave);
 void removerElemento(Pagina *p, int chave);
 void verificarOverflow(Pagina *p);
 void verificarUnderflow(Pagina *p);
-void ordenarPagina(Pagina *p, int);
+void ordenarPaginaFolha(Pagina *p);
 
 
 

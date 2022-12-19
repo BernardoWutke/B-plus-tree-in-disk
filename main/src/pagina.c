@@ -23,7 +23,7 @@ void inicializarPagina(Pagina *pagina, int _ordem, int _index, int _tipo){
     pagina->foiDeletada = 0;
 }
 
-void ordenarPagina(Pagina *p, int ordem){
+void ordenarPaginaFolha(Pagina *p){
     int j, temp1, temp2;
     for (int i = 1; i < p->qtdElementos; i++) {
         temp1 = p->chave[i];
@@ -41,7 +41,7 @@ void inserirElemento(Pagina *p, int chave){
 
     p->chave[p->qtdElementos] = chave;
     p->qtdElementos++;
-    ordenarPagina(p, p->qtdElementos);
+    ordenarPaginaFolha(p);
     if(p->qtdElementos > p->ordem){
 
         Pagina *novaPagina = criaPagina(p->ordem);

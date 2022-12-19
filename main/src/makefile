@@ -16,6 +16,9 @@ arvore:  clean
 clean:
 	rm -rf *.o
 
+limpar:
+	rm ../binarios/arvore.bin && rm ../binarios/registros.bin
+
 
 
 

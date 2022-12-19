@@ -11,6 +11,7 @@ void inicializarBP();
 void imprimirArvore();
 int  buscarPaciente(int id, int* indexPagina);
 void inserirPaciente(Paciente a);
+void deletarPaciente(int id);
 int  removerPaciente(Paciente a, BP_Tree bp_tree);
 
 #endif
