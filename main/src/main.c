@@ -117,7 +117,20 @@ int main(){
 
         }
         else if(opcao == 5){
-
+            int initialID, finalID;
+            printf("Digite o primeiro ID: ");
+            scanf("%d", &initialID);
+            while(initialID < 0){
+                printf("Valor inválido, digite novamente: ");
+                scanf("%d", &initialID);
+            } 
+            printf("Digite o último ID: ");
+            scanf("%d", &finalID);
+            while(finalID < 0 || finalID < initialID){
+                printf("Valor inválido, digite novamente: ");
+                scanf("%d", &finalID);
+            }
+            imprimirIntervaloPacientes(initialID, finalID);
         }
         else if(opcao == 6){
             printf("Sistema encerrado.\n");

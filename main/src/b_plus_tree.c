@@ -3,11 +3,7 @@
 #include"../headers/util.h"
 
 void addPagina(Pagina pag,int index);
-void imprimirArvoreHeaderReferencia(BP_Tree *bp){
-    printf("Ordem: %d \n", bp->ordem);
-    printf("Quantidade: %d \n", bp->qtdPaginas);
-    printf("Raiz: %d \n", bp->raiz);
-}
+
 
 void inicializarBP(){
 
@@ -170,13 +166,9 @@ int buscarPaciente(int id, int *indexPagina){
             fclose(arquivoArvore);
             return false;
         }
-        // verificar se a chave buscada é menor que a chave na posição 0
-        else if(id < pag.chave[0]){
-            fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pag.filho[0]), SEEK_SET);
-            fread(&pag, sizeof(Pagina), 1, arquivoArvore);
-        }
         else {
-            for(int i = 1; i < pag.qtdElementos; ++i){
+            int i;
+            for(i = 0; i < pag.qtdElementos; ++i){
                 if(id < pag.chave[i]){
                     fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pag.filho[i]), SEEK_SET);
                     fread(&pag, sizeof(Pagina), 1, arquivoArvore);
@@ -188,8 +180,10 @@ int buscarPaciente(int id, int *indexPagina){
                     break;
                 }
             }
-            fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pag.filho[pag.qtdElementos]), SEEK_SET);
-            fread(&pag, sizeof(Pagina), 1, arquivoArvore);
+            if(i == pag.qtdElementos){
+                fseek(arquivoArvore, sizeof(BP_Tree) + (sizeof(Pagina) * pag.filho[pag.qtdElementos]), SEEK_SET);
+                fread(&pag, sizeof(Pagina), 1, arquivoArvore);
+            }
         }
     }
 }
@@ -250,6 +244,10 @@ void fixOverflow(BP_Tree *bp_tree, Pagina* pagina){
     int meio = pagina->qtdElementos >> 1;
 
     novaPagina.qtdElementos = meio+1;
+
+    //linkando as paginas folhas
+    novaPagina.indexProximaPagina = pagina->indexProximaPagina;
+    pagina->indexProximaPagina = novaPagina.index;
 
     //fazendo copia dos elementos para a nova pagina
 
@@ -401,7 +399,21 @@ void addPagina(Pagina pag,int index){
     fclose(arquivoArvore);
 }
 
+void deletarRegistros(int id){
+    Paciente paciente;
+    FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
+    fseek(arquivoRegistros, id*sizeof(Paciente), SEEK_SET);
+    fread(&paciente, sizeof(Paciente), 1, arquivoRegistros);
+    paciente.foiDeletado = 1;
+    fseek(arquivoRegistros, -sizeof(Paciente), SEEK_CUR);
+    fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
+    fclose(arquivoRegistros);
+}
+
+
 void deletarPaciente(int id) {
+    deletarRegistros(id);
+
     int indexPagina;
     buscarPaciente(id, &indexPagina);
     
@@ -413,14 +425,6 @@ void deletarPaciente(int id) {
 	int del = 0; 
     while(pagina.chave[del] != id) del++;
 
-    Paciente paciente;
-    FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
-    fseek(arquivoRegistros, id*sizeof(Paciente), SEEK_SET);
-    fread(&paciente, sizeof(Paciente), 1, arquivoRegistros);
-    paciente.foiDeletado = 1;
-    fseek(arquivoRegistros, -sizeof(Paciente), SEEK_CUR);
-    fwrite(&paciente, sizeof(Paciente), 1, arquivoRegistros);
-    fclose(arquivoRegistros);
     
 	for (int i = del; i < pagina.qtdElementos - 1; i++) {
 		pagina.chave[i] = pagina.chave[i + 1];
@@ -466,4 +470,39 @@ void deletarPaciente(int id) {
     fclose(arquivoArvore);
 }
 
-
+void  imprimirIntervaloPacientes(int initialID,int finalID){
+    int indexPagina;
+    buscarPaciente(initialID,&indexPagina);
+    FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
+    FILE *arquivoRegistros = fopen(ARQUIVO_REGISTROS, "rb+");
+    
+    Pagina pagina;
+    fseek(arquivoArvore, sizeof(BP_Tree) + indexPagina*sizeof(Pagina), SEEK_SET);
+    fread(&pagina, sizeof(Pagina), 1, arquivoArvore);
+    //buscar elemento inicial na pagina
+    int i = 0;
+    while(pagina.chave[i] < initialID) {
+        i++;
+        if(i >= pagina.qtdElementos && pagina.indexProximaPagina != -1){
+            //buscar proxima pagina
+            fseek(arquivoArvore, sizeof(BP_Tree) + pagina.filho[i]*sizeof(Pagina), SEEK_SET);
+            fread(&pagina, sizeof(Pagina), 1, arquivoArvore);
+            i = 0;
+        }
+    }
+    //imprimir elementos da pagina 
+    while( pagina.chave[i] <= finalID ){
+        imprimirPaciente(pagina.chave[i], pagina.index);
+        i++;
+        if(i >= pagina.qtdElementos && pagina.indexProximaPagina != -1){
+            //buscar proxima pagina
+            fseek(arquivoArvore, sizeof(BP_Tree) + pagina.indexProximaPagina*sizeof(Pagina), SEEK_SET);
+            fread(&pagina, sizeof(Pagina), 1, arquivoArvore);
+            i = 0;
+        }
+        else if(i >= pagina.qtdElementos && pagina.indexProximaPagina == -1)
+            break;
+    }
+    fclose(arquivoArvore);
+    fclose(arquivoRegistros);   
+}
