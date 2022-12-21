@@ -1,6 +1,6 @@
 #include "../headers/util.h"
 #include "../headers/b_plus_tree.h"
-char num_paciente = 'a';
+int num_paciente = 0;
 
 void imprimirMenu(){
     printf("------------------------------------------------------\n");
@@ -83,9 +83,8 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            num_paciente++;
             Paciente p;
-            p.id = num_paciente;
+            p.id = num_paciente++;
             strcpy(p.nome, "a");
             p.anoNascimento = 1;
             strcpy(p.CPF, "a");
