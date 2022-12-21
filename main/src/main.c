@@ -83,17 +83,18 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            // num_paciente++;
-            // Paciente p;
-            // strcpy(p.nome, "a");
-            // p.anoNascimento = 1;
-            // strcpy(p.CPF, "a");
-            // strcpy(p.endereco, "a");
-            // strcpy(p.nomeMae, "a");
-            // strcpy(p.nomePai, "a");
-            // inserirPaciente(p);
+            num_paciente++;
+            Paciente p;
+            p.id = num_paciente;
+            strcpy(p.nome, "a");
+            p.anoNascimento = 1;
+            strcpy(p.CPF, "a");
+            strcpy(p.endereco, "a");
+            strcpy(p.nomeMae, "a");
+            strcpy(p.nomePai, "a");
+            inserirPaciente(p);
 
-            inserirPaciente(lerDadosPaciente());
+            // inserirPaciente(lerDadosPaciente());
         }
         else if(opcao == 3){
             printf("\nDigite o id do paciente: ");
@@ -109,7 +110,10 @@ int main(){
                 scanf("%c", &c);
                 if(c == 'y' || c == 'Y'){
                     deletarPaciente(id);
+                    printf("\nPaciente %d removido com sucesso!\n\n", id);
                 }
+                else   
+                    printf("\nOperação cancelada, paciente não foi removido!\n\n");
             }
         }
         else if(opcao == 4){
