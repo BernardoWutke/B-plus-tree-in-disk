@@ -3,6 +3,7 @@
 #include "../headers/util.h"
 
 void addPagina(Pagina pag, int index);
+void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree);
 void inicializarBP()
 {
 
@@ -106,7 +107,8 @@ void imprimirArvore()
     {
         contadorPagina += sizeof(Pagina);
         fseek(fp, contadorPagina, SEEK_SET);
-        imprimirPagina(pag, pag.pai == -1);
+        if(!pag.foiDeletada)
+            imprimirPagina(pag, pag.pai == -1);
     }
     fclose(fp);
 }
@@ -315,8 +317,8 @@ void fixOverflow(BP_Tree *bp_tree, Pagina *pagina)
         novaPagina.pai = indexRaiz;
         pagina->pai = indexRaiz;
         addPagina(novaPagina, novaPagina.index);
+
         addPagina(raiz, raiz.index);
-        
         ordenarInterna(&raiz);
         bp_tree->raiz = indexRaiz;
         bp_tree->qtdPaginas++;
@@ -336,7 +338,6 @@ void fixOverflow(BP_Tree *bp_tree, Pagina *pagina)
         pai.filho[pai.qtdElementos] = novaPagina.index;
         fclose(arquivoArvore);
         addPagina(pai, pai.index);
-        
         ordenarInterna(&pai);
 
         // verificar se a pagina pai deu overflow
@@ -347,12 +348,6 @@ void fixOverflow(BP_Tree *bp_tree, Pagina *pagina)
             addPagina(pai, pai.index);
             ordenarInterna(&pai);
         }
-       
-        arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
-        fseek(arquivoArvore, sizeof(BP_Tree) + sizeof(Pagina) * pagina->pai, SEEK_SET);
-        fwrite(&pai, sizeof(Pagina), 1, arquivoArvore);
-        fclose(arquivoArvore);
-        
     }
     if(novaPagina.tipo == INTERNA){
         for(int i = 0; i < novaPagina.qtdElementos-1; i++){
@@ -488,45 +483,40 @@ void atualizarPaginaInterna(int indexPai, int idRemovido, int novoId)
 }
 
 // Function to redistribute nodes in a B+ tree stored on the hard disk
-void redistribute(Pagina *paginaAtual, Pagina *pai, int posFilho, Pagina *paginaIrma, int posIrma)
-{
-    if (paginaAtual->tipo == FOLHA)
-    {
-        if (posIrma == paginaAtual->indexProximaPagina)
-        {
+void redistribute(Pagina* paginaAtual, Pagina* pai, int posFilho,Pagina* paginaIrma, int posIrma)
+{   
+    if(paginaAtual->tipo == FOLHA){
+        if(posIrma == paginaAtual->indexProximaPagina){
             printf("qt elementos: %d \n", paginaAtual->qtdElementos);
-            // mexe na pagina atual
-            paginaAtual->chave[paginaAtual->qtdElementos] = paginaIrma->chave[0];
-            paginaAtual->filho[paginaAtual->qtdElementos] = paginaIrma->filho[0];
-            paginaAtual->qtdElementos++;
-            // mexendo no pai, fazendo a trola
-            pai->chave[posFilho] = paginaIrma->chave[1];
-            // mexendo na pagina irma removendo o primeiro elemento
-            for (int i = 0; i < paginaIrma->qtdElementos - 1; i++)
-            {
-                paginaIrma->chave[i] = paginaIrma->chave[i + 1];
-                paginaIrma->filho[i] = paginaIrma->filho[i + 1];
+           //mexe na pagina atual
+           paginaAtual->chave[paginaAtual->qtdElementos] = paginaIrma->chave[0];
+           paginaAtual->filho[paginaAtual->qtdElementos] = paginaIrma->filho[0];
+           paginaAtual->qtdElementos++;
+           //mexendo no pai, fazendo a trola
+           pai->chave[posFilho] = paginaIrma->chave[1];
+           //mexendo na pagina irma removendo o primeiro elemento
+           for(int i = 0; i < paginaIrma->qtdElementos-1; i++){
+                paginaIrma->chave[i] = paginaIrma->chave[i+1];
+                paginaIrma->filho[i] = paginaIrma->filho[i+1];
+           }
+           paginaIrma->qtdElementos--;
+        } else{
+            //mover para frente todos os elementos
+            for(int i = paginaAtual->qtdElementos; i > 0; i--){
+                paginaAtual->chave[i] = paginaAtual->chave[i-1];
+                paginaAtual->filho[i] = paginaAtual->filho[i-1];
             }
-            paginaIrma->qtdElementos--;
-        }
-        else
-        {
-            // mover para frente todos os elementos
-            for (int i = paginaAtual->qtdElementos; i > 0; i--)
-            {
-                paginaAtual->chave[i] = paginaAtual->chave[i - 1];
-                paginaAtual->filho[i] = paginaAtual->filho[i - 1];
-            }
-            // mexe na pagina atual
-            paginaAtual->chave[0] = paginaIrma->chave[paginaIrma->qtdElementos - 1];
-            paginaAtual->filho[0] = paginaIrma->filho[paginaIrma->qtdElementos - 1];
+            //mexe na pagina atual
+            paginaAtual->chave[0] = paginaIrma->chave[paginaIrma->qtdElementos-1];
+            paginaAtual->filho[0] = paginaIrma->filho[paginaIrma->qtdElementos-1];
             paginaAtual->qtdElementos++;
-            // mexendo no pai, fazendo a troca
-            pai->chave[posFilho] = paginaIrma->chave[paginaIrma->qtdElementos - 1];
-            // mexendo na pagina irma removendo o ultimo elemento
+            //mexendo no pai, fazendo a troca
+            pai->chave[posFilho] = paginaIrma->chave[paginaIrma->qtdElementos-1];
+            //mexendo na pagina irma removendo o ultimo elemento
             paginaIrma->qtdElementos--;
         }
     }
+
 }
 
 void swap(Pagina *p1, Pagina *p2)
@@ -535,14 +525,31 @@ void swap(Pagina *p1, Pagina *p2)
     *p1 = *p2;
     *p2 = aux;
 }
-
-void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai) {
+void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree) {
     /*Passando como paramento @p_um e @paginaIrma sozinha a função irá descobrir qual está desbalanceada
     e assim saberá da forma correta quem vai concatenar em quem*/
-
+    
     // verificar qual pagina está desbalanceada
     if (paginaAtual->indexProximaPagina == paginaIrma->index)
     {
+        //achando a posição do filho da pagina pai que é a pagina atual
+        int posAtual = 0;
+        while (paginaPai->filho[posAtual] != paginaAtual->index)
+            posAtual++;
+        //vereficar se existe uma pagina anterior a pagina atual
+        if(posAtual != 0){
+            FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
+            //pegar referencia da pagina anterior da pagina atual, referenciando a pagina irma
+            fseek(arquivoArvore, sizeof(BP_Tree) + paginaPai->filho[posAtual-1] * sizeof(Pagina), SEEK_SET);
+            Pagina paginaAnterior;
+            fread(&paginaAnterior, sizeof(Pagina), 1, arquivoArvore);
+            paginaAnterior.indexProximaPagina = paginaIrma->index;
+            fseek(arquivoArvore, sizeof(BP_Tree) + paginaAnterior.index * sizeof(Pagina), SEEK_SET);
+            fwrite(&paginaAnterior, sizeof(Pagina), 1, arquivoArvore);
+            fclose(arquivoArvore);
+        }   
+        // pegando referencia da proxima pagina e garantindo que a pagina atual esteja a direita da irma
+        paginaAtual->indexProximaPagina = paginaIrma->indexProximaPagina;
         swap(paginaAtual, paginaIrma);
     }
     // concatenar paginaIrma em paginaAtual
@@ -552,116 +559,40 @@ void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
         paginaAtual->filho[paginaAtual->qtdElementos] = paginaIrma->filho[i];
         paginaAtual->qtdElementos++;
     }
+    //Encontrando a posicao da pagina atual em relacao a pagina pai
     int del = 0;
     while (paginaPai->filho[del] != paginaAtual->index)
         del++;
+
+    //removendo referencia a pagia irma/atual
     for (int i = del; i < paginaPai->qtdElementos; i++)
     {
         paginaPai->chave[i] = paginaPai->chave[i + 1];
         paginaPai->filho[i + 1] = paginaPai->chave[i + 2];
     }
     paginaPai->qtdElementos--;
-
+ 
+    //verificando se a pagina pai é a raiz, se for, atualiza a raiz
+    if(paginaPai->pai == -1 && paginaPai->qtdElementos == 0){
+        paginaPai->foiDeletada = 1;
+        bp_tree->raiz = paginaAtual->index;
+        paginaAtual->pai = -1;
+    }
+    
+    //indicando que a pagina irma foi deletada
     paginaIrma->foiDeletada = 1;
+
+    ordenarPaginaFolha(paginaAtual);
 }
 
-void concatenacaoInterna(Pagina paginaAtual)
-{
+void fixUnderflow(Pagina *paginaAtual){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
 
-    Pagina paginaPai, paginaIrma;
-    fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual.pai * sizeof(Pagina), SEEK_SET);
-    fread(&paginaPai, sizeof(Pagina), 1, arquivoArvore);
-
-    int posAtual = 0, posIrma = -1;
-    while (paginaPai.filho[posAtual] != paginaAtual.index) posAtual++;
-
-    if (posAtual > 0)
-    {
-        printf("entrou concat 0\n");
-        posIrma = paginaPai.filho[posAtual - 1];
-        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma) * sizeof(Pagina), SEEK_SET);
-        fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
-    }
-    else {
-        printf("entrou concac 1\n");
-        posIrma = paginaPai.filho[posAtual + 1];
-        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma) * sizeof(Pagina), SEEK_SET);
-        fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
-        swap(&paginaAtual, &paginaIrma);
-    }
+    //pega referencia da arvore
+    BP_Tree bp_tree;
+    fseek(arquivoArvore, 0, SEEK_SET);
+    fread(&bp_tree, sizeof(BP_Tree), 1, arquivoArvore);
     
-
-    // desce o pai para a irma
-    int posPai = (paginaPai.filho[paginaPai.qtdElementos] == paginaAtual.index) ? paginaPai.qtdElementos-1 : posAtual;
-    paginaIrma.chave[paginaIrma.qtdElementos] = paginaPai.chave[posPai];
-    //por adicionar o pai aumenta a quantidade de elementos
-    paginaIrma.qtdElementos++;
-
-    for (int i = paginaIrma.qtdElementos, j = 0; j < paginaAtual.qtdElementos; i++,j++)
-    {
-        paginaIrma.chave[i] = paginaAtual.chave[j];
-        paginaIrma.filho[i] = paginaAtual.filho[j];   
-        paginaIrma.qtdElementos++;
-    }
-    //paginaIrma.qtdElementos += paginaAtual.qtdElementos+1;
-    paginaIrma.filho[paginaIrma.qtdElementos] = paginaAtual.filho[paginaAtual.qtdElementos];
-    paginaPai.qtdElementos--;
-    
-    paginaAtual.foiDeletada = 1;
-
-
-        // if (Pag->qtdElementos < (ORDEM + 1) / 2)
-        // {
-        //     // desce o pai para o filho
-        //     Pag->chave[Pag->qtdElementos] = pai.chave[posiElementoNoPai];
-        //     // atribuir o primeiro filho da irma para o pai
-        //     Pag->filho[Pag->qtdElementos] = PagIrma->filho[0];
-        //     // aumentar a quantidade de elementos, pela descida do pai
-        //     Pag->qtdElementos++;
-        //     // concaternar a irma na pagina atual
-        //     for (int i = 0; i < PagIrma->qtdElementos; i++)
-        //     {
-        //         Pag->chave[Pag->qtdElementos] = PagIrma->chave[i];
-        //         Pag->filho[Pag->qtdElementos] = PagIrma->filho[i];
-        //         Pag->qtdElementos++;
-        //     }
-        //     // remover o elemento do pai
-        //     for (int i = posiElementoNoPai; i < pai.qtdElementos; i++)
-        //     {
-        //         pai.chave[i] = pai.chave[i + 1];
-        //         pai.filho[i] = pai.filho[i + 1];
-        //     }
-        //     // atribuir ao pai a pagina atual
-        //     pai.filho[posiElementoNoPai] = Pag->index;
-        //     // diminuir a quantidade de elementos do pai
-        //     pai.qtdElementos--;
-        // }
-        // else if (PagIrma->qtdElementos < (ORDEM + 1) / 2)
-        // {
-        //     // desce o pai para o filho (PagIrma)
-        //     PagIrma->chave[PagIrma->qtdElementos] = pai.chave[posiElementoNoPai];
-        // }
-
-    fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual.index * sizeof(Pagina), SEEK_SET);
-    fwrite(&paginaAtual, sizeof(Pagina), 1, arquivoArvore);
-
-    fseek(arquivoArvore, sizeof(BP_Tree) + paginaIrma.index * sizeof(Pagina), SEEK_SET);
-    fwrite(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
-
-    fseek(arquivoArvore, sizeof(BP_Tree) + paginaPai.index * sizeof(Pagina), SEEK_SET);
-    fwrite(&paginaPai, sizeof(Pagina), 1, arquivoArvore);
-
-    fclose(arquivoArvore);
-    if(paginaPai.qtdElementos < (ORDEM+1)/2){
-        concatenacaoInterna(paginaPai);
-    }
-
-}
-
-void fixUnderflow(Pagina *paginaAtual)
-{
-    FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb+");
     // Calculate the position of the sibling node in the file
     int posIrma = -1, posAtual = 0;
     Pagina paginaIrma, paginaPai;
@@ -669,53 +600,48 @@ void fixUnderflow(Pagina *paginaAtual)
     fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual->pai * sizeof(Pagina), SEEK_SET);
     fread(&paginaPai, sizeof(Pagina), 1, arquivoArvore);
 
-    while (paginaPai.filho[posAtual] != paginaAtual->index)
-        posAtual++;
+    while(paginaPai.filho[posAtual] != paginaAtual->index) posAtual++;
 
-    if (posAtual > 0)
-    {
-        printf("entrou fixUnder 0\n");
+    if(posAtual > 0){
+        
+        printf("entrou 0\n");
         posIrma = paginaPai.filho[posAtual - 1];
-        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma) * sizeof(Pagina), SEEK_SET);
+        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma)*sizeof(Pagina), SEEK_SET);
         fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
     }
-    if (posAtual < paginaPai.qtdElementos && (posIrma == -1 || paginaAtual->qtdElementos + paginaIrma.qtdElementos < ORDEM))
-    {
-
-        printf("entrou fixUnder 1\n");
+    if(posAtual < paginaPai.qtdElementos && (posIrma == -1 || paginaAtual->qtdElementos + paginaIrma.qtdElementos < ORDEM)){
+        
+        printf("entrou 1\n");
         posIrma = paginaPai.filho[posAtual + 1];
-        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma) * sizeof(Pagina), SEEK_SET);
+        fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma)*sizeof(Pagina), SEEK_SET);
         fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
     }
 
     // printf("")
 
-    if (posIrma == -1 || paginaAtual->qtdElementos + paginaIrma.qtdElementos < ORDEM)
-    {
-        // concatenar
-
+    if(posIrma == -1  || paginaAtual->qtdElementos + paginaIrma.qtdElementos < ORDEM){
+        //concatenar
+        
         printf("entrou concatenar\n");
-        concatenarExterna(paginaAtual, &paginaIrma, &paginaPai);
-
-        if(paginaPai.qtdElementos < (ORDEM + 1)/2){
-            concatenacaoInterna(paginaPai);
-        }
+        concatenarExterna(paginaAtual, &paginaIrma, &paginaPai, &bp_tree);
     }
-    else
-    {
+    else {
         printf("entrou redis\n");
         redistribute(paginaAtual, &paginaPai, posAtual, &paginaIrma, posIrma);
     }
 
-    // escrevendo o pai
+    //escrevendo o pai
     fseek(arquivoArvore, sizeof(BP_Tree) + paginaPai.index * sizeof(Pagina), SEEK_SET);
     fwrite(&paginaPai, sizeof(Pagina), 1, arquivoArvore);
-    // escrevendo a irma
+    //escrevendo a irma
     fseek(arquivoArvore, sizeof(BP_Tree) + paginaIrma.index * sizeof(Pagina), SEEK_SET);
     fwrite(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
-
+    //escrevendo a pagina atual
+    fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual->index * sizeof(Pagina), SEEK_SET);
+    fwrite(paginaAtual, sizeof(Pagina), 1, arquivoArvore);
+    
+    
     fclose(arquivoArvore);
-
 
 }
 
@@ -749,8 +675,7 @@ void deletarPaciente(int id)
         atualizarPaginaInterna(pagina.pai, id, pagina.chave[0]);
     }
 
-    if (pagina.pai != -1 && pagina.qtdElementos < (ORDEM + 1) / 2)
-    {
+    if(pagina.pai != -1 && pagina.qtdElementos < (ORDEM+1)/2){
         fixUnderflow(&pagina);
     }
 
@@ -809,3 +734,4 @@ void imprimirIntervaloPacientes(int initialID, int finalID)
     fclose(arquivoArvore);
     fclose(arquivoRegistros);
 }
+
