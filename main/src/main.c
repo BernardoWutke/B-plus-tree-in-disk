@@ -84,14 +84,16 @@ int main(){
         }
         else if(opcao == 2){ // Cadastrar paciente
             Paciente p;
-            p.id = num_paciente++;
-            strcpy(p.nome, "a");
-            p.anoNascimento = 1;
-            strcpy(p.CPF, "a");
-            strcpy(p.endereco, "a");
-            strcpy(p.nomeMae, "a");
-            strcpy(p.nomePai, "a");
-            inserirPaciente(p);
+            // for(int i = 0; i < 13; i++){   
+                p.id = num_paciente++;
+                strcpy(p.nome, "a");
+                p.anoNascimento = 1;
+                strcpy(p.CPF, "a");
+                strcpy(p.endereco, "a");
+                strcpy(p.nomeMae, "a");
+                strcpy(p.nomePai, "a");
+                inserirPaciente(p);
+            // }
 
             // inserirPaciente(lerDadosPaciente());
         }
