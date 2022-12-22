@@ -367,15 +367,12 @@ void fixOverflow(BP_Tree *bp_tree, Pagina *pagina)
 
             fseek(arquivoAvore, sizeof(BP_Tree) + sizeof(Pagina) * novaPagina.filho[k], SEEK_SET);
             fread(&tempPagina, sizeof(Pagina), 1, arquivoAvore);
-            printf("%d %d => ", tempPagina.index, tempPagina.pai);
             tempPagina.pai = novaPagina.index;
-            printf("%d || ", tempPagina.pai);
             fseek(arquivoAvore, sizeof(BP_Tree) + sizeof(Pagina) * novaPagina.filho[k], SEEK_SET);
             fwrite(&tempPagina, sizeof(Pagina), 1, arquivoAvore);
             
             fclose(arquivoAvore);
         }
-        printf("\n");
     }
     
 }
@@ -556,27 +553,37 @@ void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
     while (paginaPai->filho[del] != paginaAtual->index)
         del++;
 
-    //removendo referencia a pagia irma/atual
+    //removendo referencia a pagina irma/atual
     for (int i = del; i < paginaPai->qtdElementos; i++)
     {
         paginaPai->chave[i] = paginaPai->chave[i + 1];
         paginaPai->filho[i + 1] = paginaPai->chave[i + 2];
     }
     paginaPai->qtdElementos--;
- 
+    
+    
     //verificando se a pagina pai é a raiz, se for, atualiza a raiz
     if(paginaPai->pai == -1 && paginaPai->qtdElementos == 0){
         paginaPai->foiDeletada = 1;
         bp_tree->raiz = paginaAtual->index;
         paginaAtual->pai = -1;
+        
+        
+    }
+    else{  
+        paginaPai->filho[del-1] = paginaAtual->index; 
     }
     
     //indicando que a pagina irma foi deletada
     paginaIrma->foiDeletada = 1;
 
+    
+
     ordenarPaginaFolha(paginaAtual);
+    printf("index pai %d || qtdElemento %d\n", paginaPai->index, paginaPai->qtdElementos);
     //verificando se a pagina pai está desbalanceada
-    if( !(paginaPai->index == bp_tree->raiz) && (paginaPai->qtdElementos < (ORDEM - 1) /2 )){
+    if( paginaPai->pai != -1 && (paginaPai->qtdElementos < (ORDEM + 1) /2 )){
+        printf("underflow pro pai \n");
         fixUnderflow(paginaPai);
     }
 
@@ -608,13 +615,6 @@ void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
     //marca a pagina irma como deletada
     paginaIrma->foiDeletada = 1;
 
-    //verificando se a pagina pai é a raiz, se for, atualiza a raiz
-    if(paginaPai->pai == -1 && paginaPai->qtdElementos == 0){
-        paginaPai->foiDeletada = 1;
-        bp_tree->raiz = paginaAtual->index;
-        paginaAtual->pai = -1;
-    }
-
     //removendo o chave que referencia a pagina atual na pagina pai
     for (int i = posPai; i < paginaPai->qtdElementos; i++)
     {
@@ -622,10 +622,18 @@ void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
         paginaPai->filho[i + 1] = paginaPai->chave[i + 2];
     }
     paginaPai->qtdElementos--;
+
+    //verificando se a pagina pai é a raiz, se for, atualiza a raiz
+    if(paginaPai->pai == -1 && paginaPai->qtdElementos == 0){
+        paginaPai->foiDeletada = 1;
+        bp_tree->raiz = paginaAtual->index;
+        paginaAtual->pai = -1;
+    }
+    
     ordenarInterna(paginaAtual);
 
     //verificar se a pagina pai precisa ser concatenada
-    if(paginaPai->qtdElementos < (ORDEM-1)/2){
+    if(paginaPai->pai != -1 && paginaPai->qtdElementos < (ORDEM-1)/2){
         fixUnderflow(paginaPai);
     }
 }
@@ -648,15 +656,11 @@ void fixUnderflow(Pagina *paginaAtual){
     while(paginaPai.filho[posAtual] != paginaAtual->index) posAtual++;
 
     if(posAtual > 0){
-        
-        printf("entrou 0\n");
         posIrma = paginaPai.filho[posAtual - 1];
         fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma)*sizeof(Pagina), SEEK_SET);
         fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
     }
     if(posAtual < paginaPai.qtdElementos && (posIrma == -1 || paginaAtual->qtdElementos + paginaIrma.qtdElementos < ORDEM)){
-        
-        printf("entrou 1\n");
         posIrma = paginaPai.filho[posAtual + 1];
         fseek(arquivoArvore, sizeof(BP_Tree) + (posIrma)*sizeof(Pagina), SEEK_SET);
         fread(&paginaIrma, sizeof(Pagina), 1, arquivoArvore);
@@ -669,8 +673,11 @@ void fixUnderflow(Pagina *paginaAtual){
         
         printf("entrou concatenar\n");
         if(paginaAtual->tipo == FOLHA){
+            printf("entrou concatenarExterna\n");
             concatenarExterna(paginaAtual, &paginaIrma, &paginaPai, &bp_tree);
+            printf("p: %d qt =>  %d\n", paginaPai.index,paginaPai.qtdElementos);
         } else {
+            printf("entrou concatenarInterna\n");
             concatenarInterna(paginaAtual, &paginaIrma, &paginaPai, &bp_tree);
         } 
     }
