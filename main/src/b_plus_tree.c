@@ -6,7 +6,7 @@ int controleFixUnderflow = 0;
 
 void addPagina(Pagina pag, int index);
 void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree);
-void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree);
+void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree, FILE *arquivoArvore);
 void atualizarPaginaInterna(int indexPai, int idRemovido, int novoId);
 void fixUnderflow(Pagina *paginaAtual);
 void inicializarBP()
@@ -589,7 +589,7 @@ void concatenarExterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
 
 }
 
-void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree){
+void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPai, BP_Tree* bp_tree, FILE *arquivoArvore) {
     //achar a posicao do filho da pagina pai que é a pagina atual
     int posAtual = 0;
     while (paginaPai->filho[posAtual] != paginaAtual->index)
@@ -631,6 +631,20 @@ void concatenarInterna(Pagina *paginaAtual, Pagina *paginaIrma, Pagina *paginaPa
     }
     
     ordenarInterna(paginaAtual);
+
+    
+
+    //escrevendo o pai
+    fseek(arquivoArvore, sizeof(BP_Tree) + paginaPai->index * sizeof(Pagina), SEEK_SET);
+    fwrite(paginaPai, sizeof(Pagina), 1, arquivoArvore);
+    //escrevendo a irma
+    fseek(arquivoArvore, sizeof(BP_Tree) + paginaIrma->index * sizeof(Pagina), SEEK_SET);
+    fwrite(paginaIrma, sizeof(Pagina), 1, arquivoArvore);
+    //escrevendo a pagina atual
+    fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual->index * sizeof(Pagina), SEEK_SET);
+    fwrite(paginaAtual, sizeof(Pagina), 1, arquivoArvore);
+
+    
 
     //verificar se a pagina pai precisa ser concatenada
     if(paginaPai->pai != -1 && paginaPai->qtdElementos < (ORDEM-1)/2){
@@ -678,7 +692,8 @@ void fixUnderflow(Pagina *paginaAtual){
             printf("p: %d qt =>  %d\n", paginaPai.index,paginaPai.qtdElementos);
         } else {
             printf("entrou concatenarInterna\n");
-            concatenarInterna(paginaAtual, &paginaIrma, &paginaPai, &bp_tree);
+            concatenarInterna(paginaAtual, &paginaIrma, &paginaPai, &bp_tree, arquivoArvore);
+            goto desvio;
         } 
     }
     else {
@@ -696,7 +711,8 @@ void fixUnderflow(Pagina *paginaAtual){
     fseek(arquivoArvore, sizeof(BP_Tree) + paginaAtual->index * sizeof(Pagina), SEEK_SET);
     fwrite(paginaAtual, sizeof(Pagina), 1, arquivoArvore);
     
-    
+
+desvio:
     fclose(arquivoArvore);
 
 }

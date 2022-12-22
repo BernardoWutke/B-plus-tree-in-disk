@@ -84,7 +84,7 @@ int main(){
         }
         else if(opcao == 2){ // Cadastrar paciente
             Paciente p;
-            for(int i = 0; i < 13; i++){   
+            for(int i = 0; i < 40; i++){   
                 p.id = num_paciente++;
                 strcpy(p.nome, "a");
                 p.anoNascimento = 1;
