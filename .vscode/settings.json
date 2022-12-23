@@ -4,6 +4,18 @@
         "util.h": "c",
         "stdio.h": "c",
         "string.h": "c",
-        "pagina.h": "c"
+        "pagina.h": "c",
+        "climits": "c",
+        "cmath": "c",
+        "cstdarg": "c",
+        "cstdio": "c",
+        "cstdlib": "c",
+        "cwchar": "c",
+        "cwctype": "c",
+        "type_traits": "c",
+        "limits": "c",
+        "*.tcc": "c",
+        "cstdint": "c",
+        "typeinfo": "c"
     }
 }

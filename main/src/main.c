@@ -59,6 +59,22 @@ Paciente lerDadosPaciente(){
     return novoPaciente;
 }
 
+void teste(){
+    Paciente p;
+    for(int i = 0; i < 13; i++){   
+        p.id = num_paciente++;
+        strcpy(p.nome, "a");
+        p.anoNascimento = 1;
+        strcpy(p.CPF, "a");
+        strcpy(p.endereco, "a");
+        strcpy(p.nomeMae, "a");
+        strcpy(p.nomePai, "a");
+        inserirPaciente(p);
+    }
+    deletarPaciente(4);
+    deletarPaciente(1);
+}
+
 int main(){
     BP_Tree bp_tree;
     inicializarBP(); // carrega o cabeçalho da arvore
@@ -66,6 +82,8 @@ int main(){
     int opcao = -1;
 
     int id, indexPagina;
+
+    teste();
 
     while(opcao != 6){
         imprimirMenu();
@@ -83,19 +101,7 @@ int main(){
             }
         }
         else if(opcao == 2){ // Cadastrar paciente
-            Paciente p;
-            for(int i = 0; i < 40; i++){   
-                p.id = num_paciente++;
-                strcpy(p.nome, "a");
-                p.anoNascimento = 1;
-                strcpy(p.CPF, "a");
-                strcpy(p.endereco, "a");
-                strcpy(p.nomeMae, "a");
-                strcpy(p.nomePai, "a");
-                inserirPaciente(p);
-            }
-
-            // inserirPaciente(lerDadosPaciente());
+            inserirPaciente(lerDadosPaciente());
         }
         else if(opcao == 3){
             printf("\nDigite o id do paciente: ");
