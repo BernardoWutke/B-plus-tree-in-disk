@@ -73,6 +73,18 @@ void teste(){
     }
     deletarPaciente(4);
     deletarPaciente(1);
+    deletarPaciente(2);
+    deletarPaciente(10);
+    deletarPaciente(3);
+    deletarPaciente(5);
+    deletarPaciente(7);
+    deletarPaciente(9);
+    deletarPaciente(6);
+    deletarPaciente(12);
+    deletarPaciente(8);
+    deletarPaciente(0);
+    deletarPaciente(11);
+
 }
 
 int main(){
