@@ -7,7 +7,7 @@ Pagina *criaPagina(int ordem){
     pagina->pai = -1;
     pagina->ordem = ordem;
     pagina->indexProximaPagina = -1;
-    pagina->indexPaginaAnterior = -1;
+
 
     return pagina;
 }
@@ -18,7 +18,6 @@ void inicializarPagina(Pagina *pagina, int _ordem, int _index, int _tipo){
     pagina->pai = -1;
     pagina->ordem = _ordem;
     pagina->indexProximaPagina = -1;
-    pagina->indexPaginaAnterior = -1;
     pagina->tipo = _tipo;
     pagina->foiDeletada = 0;
 }

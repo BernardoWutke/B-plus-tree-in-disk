@@ -2,7 +2,8 @@
 #include "../headers/b_plus_tree.h"
 int num_paciente = 0;
 
-void imprimirMenu(){
+void imprimirMenu()
+{
     printf("------------------------------------------------------\n");
     printf("|                  SISTEMA DE SAUDE                  |\n");
     printf("------------------------------------------------------\n");
@@ -17,22 +18,27 @@ void imprimirMenu(){
     printf("------------------------------------------------------\n");
 }
 
-void flush_in(){ 
+void flush_in()
+{
     int ch;
-    while( (ch = fgetc(stdin)) != EOF && ch != '\n' ){}
+    while ((ch = fgetc(stdin)) != EOF && ch != '\n')
+    {
+    }
 }
 
-Paciente lerDadosPaciente(){
+Paciente lerDadosPaciente()
+{
     Paciente novoPaciente;
 
     int _;
     printf("Digite o ID do paciente: ");
     scanf("%d", &novoPaciente.id);
-    while(buscarPaciente(novoPaciente.id, &_)){
+    while (buscarPaciente(novoPaciente.id, &_))
+    {
         printf("ID ja cadastrado! digite outro ID: ");
         scanf("%d", &novoPaciente.id);
     }
-    
+
     flush_in();
     printf("Digite o nome do paciente: ");
     scanf("%[^\n]", novoPaciente.nome);
@@ -59,9 +65,9 @@ Paciente lerDadosPaciente(){
     return novoPaciente;
 }
 
-void teste(){
+/* void teste(){
     Paciente p;
-    for(int i = 0; i < 13; i++){   
+    for(int i = 0; i < 13; i++){
         p.id = num_paciente++;
         strcpy(p.nome, "a");
         p.anoNascimento = 1;
@@ -85,9 +91,10 @@ void teste(){
     deletarPaciente(0);
     deletarPaciente(11);
 
-}
+} */
 
-int main(){
+int main()
+{
     BP_Tree bp_tree;
     inicializarBP(); // carrega o cabeçalho da arvore
 
@@ -97,71 +104,84 @@ int main(){
 
     teste();
 
-    while(opcao != 6){
+    while (opcao != 6)
+    {
         imprimirMenu();
         printf("\nDigite sua opcao: ");
         scanf("%d", &opcao);
-        
-        if(opcao == 1){ // buscar paciente pelo ID 
+
+        if (opcao == 1)
+        { // buscar paciente pelo ID
             printf("\nDigite o id do paciente: ");
             scanf("%d", &id);
-            if(!buscarPaciente(id, &indexPagina)){
+            if (!buscarPaciente(id, &indexPagina))
+            {
                 printf("Paciente com ID %d nao existe!\n", id);
             }
-            else{
+            else
+            {
                 imprimirPaciente(id, indexPagina);
             }
         }
-        else if(opcao == 2){ // Cadastrar paciente
+        else if (opcao == 2)
+        { // Cadastrar paciente
             inserirPaciente(lerDadosPaciente());
         }
-        else if(opcao == 3){
+        else if (opcao == 3)
+        {
             printf("\nDigite o id do paciente: ");
             scanf("%d", &id);
-            if(!buscarPaciente(id, &indexPagina)){
+            if (!buscarPaciente(id, &indexPagina))
+            {
                 printf("Paciente com ID %d nao existe!\n", id);
             }
-            else{
+            else
+            {
                 char c;
                 imprimirPaciente(id, indexPagina);
                 printf("Tem certeza que deseja excluir? (Y/N) ");
                 flush_in();
                 scanf("%c", &c);
-                if(c == 'y' || c == 'Y'){
+                if (c == 'y' || c == 'Y')
+                {
                     deletarPaciente(id);
                     printf("\nPaciente %d removido com sucesso!\n\n", id);
                 }
-                else   
+                else
                     printf("\nOperação cancelada, paciente não foi removido!\n\n");
             }
         }
-        else if(opcao == 4){
+        else if (opcao == 4)
+        {
             imprimirArvore();
-
         }
-        else if(opcao == 5){
+        else if (opcao == 5)
+        {
             int initialID, finalID;
             printf("Digite o primeiro ID: ");
             scanf("%d", &initialID);
-            while(initialID < 0){
+            while (initialID < 0)
+            {
                 printf("Valor inválido, digite novamente: ");
                 scanf("%d", &initialID);
-            } 
+            }
             printf("Digite o último ID: ");
             scanf("%d", &finalID);
-            while(finalID < 0 || finalID < initialID){
+            while (finalID < 0 || finalID < initialID)
+            {
                 printf("Valor inválido, digite novamente: ");
                 scanf("%d", &finalID);
             }
             imprimirIntervaloPacientes(initialID, finalID);
         }
-        else if(opcao == 6){
+        else if (opcao == 6)
+        {
             printf("Sistema encerrado.\n");
         }
-        else{
+        else
+        {
             printf("\nValor invalido!\n");
         }
     }
-
     return 0;
 }

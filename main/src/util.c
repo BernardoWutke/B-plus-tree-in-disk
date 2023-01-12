@@ -6,21 +6,6 @@ void fillLine(int size, char c){
     while((size--) > 0) printf("%c", c);
 }
 
-void imprimirArquivo(){
-    FILE *fp = fopen(ARQUIVO_ARVORE, "rb");
-
-  if (fp == NULL) {
-    perror("Não foi possível abrir o arquivo !!!");
-    EXIT_FAILURE;
-  }
-  
-  BP_Tree *bp;
-  fread(&bp, sizeof(BP_Tree), 1, fp);
-  printf("Ordem: %d \n", bp->ordem);
-  printf("Quantidade: %d \n", bp->qtdPaginas);
-  printf("Raiz: %d \n", bp->raiz);
-  fclose(fp);
-}
 
 void imprimirPaciente(int id, int indexPagina){
     FILE *arquivoArvore = fopen(ARQUIVO_ARVORE, "rb");

@@ -6,7 +6,6 @@ typedef struct  {
   int ordem, qtdPaginas, raiz, qtdPacientes;
 } BP_Tree;
 
-
 void inicializarBP();
 void imprimirArvore();
 int  buscarPaciente(int id, int* indexPagina);

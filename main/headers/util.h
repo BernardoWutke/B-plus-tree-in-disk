@@ -30,10 +30,8 @@ typedef struct paciente{
     
 } Paciente;
 
-void imprimirArquivo();
 void imprimirPaciente(int id, int indexPagina);
 void fillLine(int size, char c);
-
 
 #endif 
 

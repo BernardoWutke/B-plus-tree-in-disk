@@ -32,7 +32,4 @@ void verificarOverflow(Pagina *p);
 void verificarUnderflow(Pagina *p);
 void ordenarPaginaFolha(Pagina *p);
 
-
-
-
 #endif /* _PAGE_H_ */
